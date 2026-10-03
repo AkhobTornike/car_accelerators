@@ -1,4 +1,4 @@
-import type { Battery, Fitment, VehicleType } from './types.ts';
+import type { Battery, Fitment, NewSale, Sale, SaleVoid, StockMovement, VehicleType } from './types.ts';
 
 // The ONLY door to the data. v1: JSON files on disk. Later: Firestore (Admin SDK, server-side only).
 // API routes and the admin panel depend on this interface — never on a concrete store.
@@ -28,4 +28,22 @@ export interface WriteRepository {
   listBatteries(): Promise<Battery[]>;              // admin only
   listFitments(): Promise<Fitment[]>;               // admin only
   listChanges(limit: number): Promise<ChangeEntry[]>;
+}
+
+export interface DateRange { from?: string; to?: string }   // ISO; `to` exclusive
+
+/** Admin-only. Every method that changes stock is ONE atomic unit: sale/void/receive/adjust write the
+ *  ledger entries AND update Battery.quantity/stock together (Firestore transaction later; serialised file write now).
+ *  Sales and movements are append-only — there is no update or delete for them. */
+export interface InventoryRepository {
+  /** Checks with checkSale(), throws InsufficientStockError / Error listing the problems; returns the stored Sale. */
+  recordSale(input: NewSale): Promise<Sale>;
+  /** Undo a sale: stores a SaleVoid and returns the stock. Throws if already voided. */
+  voidSale(saleId: string, reason: string): Promise<SaleVoid>;
+  receiveStock(batteryId: string, qty: number, opts?: { unitCost?: number | null; note?: string }): Promise<StockMovement>;
+  /** Set the real counted quantity; records the difference as an 'adjust' movement (no-op error if equal). */
+  adjustStock(batteryId: string, countedQuantity: number, note?: string): Promise<StockMovement>;
+  getSale(id: string): Promise<Sale | null>;
+  listSales(range?: DateRange): Promise<{ sales: Sale[]; voids: SaleVoid[] }>;
+  listMovements(opts?: { batteryId?: string; range?: DateRange; limit?: number }): Promise<StockMovement[]>;
 }

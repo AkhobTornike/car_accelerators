@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "sale.schema.json",
+  "title": "Sale",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "soldAt", "customer", "lines", "discount", "total", "paymentMethod"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,59}$" },
+    "soldAt": { "type": "string", "format": "date-time" },
+    "customer": {
+      "type": "object", "additionalProperties": false, "required": ["firstName", "lastName"],
+      "properties": {
+        "firstName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "lastName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "idNumber": { "type": "string", "pattern": "^(\\d{9}|\\d{11})$" },
+        "iban": { "type": "string", "pattern": "^GE\\d{2}[A-Z]{2}\\d{16}$" },
+        "phone": { "type": "string", "maxLength": 30 }
+      },
+      "anyOf": [{ "required": ["idNumber"] }, { "required": ["iban"] }]
+    },
+    "lines": {
+      "type": "array", "minItems": 1, "maxItems": 50,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["batteryId", "name", "qty", "unitPrice"],
+        "properties": {
+          "batteryId": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "qty": { "type": "integer", "minimum": 1, "maximum": 1000 },
+          "unitPrice": { "type": "number", "minimum": 0 },
+          "unitCost": { "type": ["number", "null"], "minimum": 0 }
+        }
+      }
+    },
+    "discount": { "type": "number", "minimum": 0 },
+    "total": { "type": "number", "minimum": 0 },
+    "paymentMethod": { "enum": ["cash", "transfer", "card"] },
+    "note": { "type": "string", "maxLength": 500 }
+  }
+}

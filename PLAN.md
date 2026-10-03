@@ -38,8 +38,21 @@ Fallbacks when no match: old battery code lookup, VIN, photo of label -> WhatsAp
 6. Data entry — longest part; start with common GE-market makes (Toyota, Mercedes, BMW, Opel, VW, Ford, Hyundai, Kia). Ask the shop for their own car<->battery table (Excel/notes) first.
 7. Deploy (Firebase App Hosting), tests (fitment logic, scrape-attempt script, Lighthouse/a11y)
 
+## Phase 5b — Inventory & sales (decided 2026-10-03, important)
+No selling on the website. The admin records every sale; this is how stock stays true and how the shop keeps data for invoices/approval documents.
+- Contract: `core/types.ts` (Sale, SaleLine, Customer, SaleVoid, StockMovement, Battery.costPrice), `core/inventory.ts` (totals, sale check, ledger math), `core/csv.ts` (CSV with BOM + formula-injection guard), `InventoryRepository` in `core/repository.ts`, schemas `sale`/`stock-movement`.
+- Append-only ledger: Battery.quantity == sum of movement deltas; sales are immutable, undone by a SaleVoid that returns the stock; no editing or deleting of sales/movements.
+- Sale record keeps: date, customer first/last name + (personal/company ID or IBAN, at least one) + optional phone, lines (snapshot of name, price, cost), discount, total, payment method, note. No "which admin" tracking (one shared account).
+- Admin form: easy fill — pick battery (search), qty, price prefilled from the catalogue, customer fields, payment method; one tap to save; stock checked before saving.
+- `costPrice` is private (never in a public DTO) and enables margin and stock-value reports.
+- Exports: CSV only (sales, stock sheet, movements). No RS.ge / invoicing integration.
+- Personal data (names, ID numbers, IBAN) lives server-side only, never in public API/logs; collect only these fields; mention in the privacy notice.
+
+## Decided (2026-10-03)
+- Price AND remaining quantity are shown publicly (`price`, `quantity` on Battery).
+- Inventory & sales built into the admin (Phase 5b above); CSV export only; margin report wanted; low sales volume, so a simple form beats speed tricks.
+- Admin: max 2 people, ONE shared account, no roles. Consequence: the change history cannot tell the two apart (`by` = the account); protect the account with 2FA.
+
 ## Open decisions
 - Hosting: Firebase App Hosting (leaning yes) vs Cloudflare
-- Admin: single user vs roles
-- Show price/stock on site, or "call/WhatsApp" only
 - Data source: does the shop provide a table?

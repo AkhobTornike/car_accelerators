@@ -25,7 +25,9 @@ export interface Battery {
   holdDown?: string;                // e.g. "B13", "B14"
   warrantyMonths: number;
   price: number | null;             // GEL; null = "ask us"
+  costPrice?: number | null;        // GEL, PRIVATE — admin/reports only, never in a public DTO
   stock: Stock;
+  quantity?: number;                // units on the shelf, shown to customers; kept in sync by the stock ledger (core/inventory.ts)
   oemCodes: string[];               // codes printed on the old battery, for reverse lookup
   images?: string[];
   active: boolean;
@@ -74,3 +76,55 @@ export interface Match {
 }
 
 export interface Rejection { battery: Battery; reasons: RejectReason[] }
+
+// ---- Inventory & sales (admin only; sales happen offline, the admin records them) ----
+
+export type PaymentMethod = 'cash' | 'transfer' | 'card';
+
+export interface Customer {
+  firstName: string;
+  lastName: string;
+  idNumber?: string;                // personal number (11 digits) or company ID (9 digits)
+  iban?: string;                    // at least one of idNumber / iban is required
+  phone?: string;
+}
+
+export interface SaleLine {
+  batteryId: string;
+  name: string;                     // snapshot at sale time
+  qty: number;
+  unitPrice: number;                // GEL, snapshot
+  unitCost?: number | null;         // snapshot of costPrice, for margin reports
+}
+
+/** Immutable once written. A mistake is undone with a SaleVoid, never by editing. */
+export interface Sale {
+  id: string;
+  soldAt: string;                   // ISO 8601
+  customer: Customer;
+  lines: SaleLine[];
+  discount: number;                 // GEL, total discount on the whole sale (>= 0)
+  total: number;                    // sum(qty * unitPrice) - discount
+  paymentMethod: PaymentMethod;
+  note?: string;
+}
+
+export type NewSale = Omit<Sale, 'id' | 'total' | 'soldAt'> & { soldAt?: string };
+
+export interface SaleVoid { id: string; saleId: string; at: string; reason: string }
+
+export type MovementKind = 'initial' | 'receive' | 'sale' | 'sale-void' | 'return' | 'adjust';
+
+/** Append-only stock ledger. Battery.quantity == sum of delta. */
+export interface StockMovement {
+  id: string;
+  at: string;
+  batteryId: string;
+  delta: number;                    // non-zero integer: + in, - out
+  kind: MovementKind;
+  saleId?: string;
+  unitCost?: number | null;         // for 'receive'
+  note?: string;
+}
+
+export type NewMovement = Omit<StockMovement, 'id'>;

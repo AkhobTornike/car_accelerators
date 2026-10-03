@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "stock-movement.schema.json",
+  "title": "StockMovement",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "at", "batteryId", "delta", "kind"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,59}$" },
+    "at": { "type": "string", "format": "date-time" },
+    "batteryId": { "type": "string", "minLength": 1 },
+    "delta": { "type": "integer", "not": { "const": 0 } },
+    "kind": { "enum": ["initial", "receive", "sale", "sale-void", "return", "adjust"] },
+    "saleId": { "type": "string" },
+    "unitCost": { "type": ["number", "null"], "minimum": 0 },
+    "note": { "type": "string", "maxLength": 500 }
+  }
+}
