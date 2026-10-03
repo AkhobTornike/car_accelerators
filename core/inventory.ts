@@ -1,4 +1,4 @@
-import type { Battery, NewMovement, Sale, SaleLine, SaleVoid, StockMovement } from './types.ts';
+import type { Battery, Customer, NewMovement, Sale, SaleLine, SaleVoid, StockMovement } from './types.ts';
 
 export class InsufficientStockError extends Error {
   constructor(public batteryId: string, public available: number, public requested: number) {
@@ -14,6 +14,17 @@ export function saleTotal(lines: Pick<SaleLine, 'qty' | 'unitPrice'>[], discount
 
 export function quantityFromMovements(movements: Pick<StockMovement, 'delta'>[]): number {
   return movements.reduce((s, m) => s + m.delta, 0);
+}
+
+/** Same rules as sale.schema.json: names, ID (9 or 11 digits) or Georgian IBAN, at least one of the two. */
+export function checkCustomer(c: Customer): string[] {
+  const errors: string[] = [];
+  if (!c.firstName?.trim()) errors.push('customer first name is required');
+  if (!c.lastName?.trim()) errors.push('customer last name is required');
+  if (!c.idNumber && !c.iban) errors.push('customer needs an ID number or an IBAN');
+  if (c.idNumber && !/^(\d{9}|\d{11})$/.test(c.idNumber)) errors.push('ID number must be 9 or 11 digits');
+  if (c.iban && !/^GE\d{2}[A-Z]{2}\d{16}$/.test(c.iban)) errors.push('IBAN must look like GE00XX0000000000000000');
+  return errors;
 }
 
 /** Problems with a sale that is about to be recorded; empty = OK. Lines for the same battery are summed. */

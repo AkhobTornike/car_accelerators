@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { InsufficientStockError, applyMovements, checkSale, movementsForSale, movementsForVoid, quantityFromMovements, saleTotal } from './inventory.ts';
+import { InsufficientStockError, applyMovements, checkCustomer, checkSale, movementsForSale, movementsForVoid, quantityFromMovements, saleTotal } from './inventory.ts';
 import type { Battery, Sale, SaleLine } from './types.ts';
 
 const bat = (id: string, quantity: number | undefined, stock: Battery['stock'] = 'in'): Battery => ({
@@ -67,5 +67,24 @@ describe('applyMovements', () => {
     const b = bat('a', 5);
     applyMovements(b, [{ batteryId: 'a', delta: -5 }]);
     expect(b).toMatchObject({ quantity: 5, stock: 'in' });
+  });
+});
+
+describe('checkCustomer', () => {
+  const ok = { firstName: 'Nino', lastName: 'Beridze' };
+  it('accepts a personal number, a company ID or an IBAN', () => {
+    expect(checkCustomer({ ...ok, idNumber: '01001012345' })).toEqual([]);
+    expect(checkCustomer({ ...ok, idNumber: '204512345' })).toEqual([]);
+    expect(checkCustomer({ ...ok, iban: 'GE29NB0000000101904917' })).toEqual([]);
+  });
+  it('needs a name and at least one identifier', () => {
+    expect(checkCustomer({ firstName: ' ', lastName: '' , idNumber: '01001012345' })).toHaveLength(2);
+    expect(checkCustomer(ok)).toEqual(['customer needs an ID number or an IBAN']);
+  });
+  it('rejects malformed identifiers', () => {
+    expect(checkCustomer({ ...ok, idNumber: '1234567890' })).toEqual(['ID number must be 9 or 11 digits']);
+    expect(checkCustomer({ ...ok, idNumber: '0100101234a' })).toHaveLength(1);
+    expect(checkCustomer({ ...ok, iban: 'ge29nb0000000101904917' })).toHaveLength(1);
+    expect(checkCustomer({ ...ok, iban: 'DE89370400440532013000' })).toHaveLength(1);
   });
 });

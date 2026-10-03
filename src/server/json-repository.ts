@@ -8,8 +8,8 @@ export const normaliseCode = (code: string) => code.trim().toUpperCase().replace
 const byText = (a: string, b: string) => a.localeCompare(b);
 const distinct = (xs: string[]) => [...new Set(xs)].sort(byText);
 
-export function createJsonRepository(dataDir: string): ReadRepository & WriteRepository {
-  const store = new JsonStore(dataDir);
+export function createJsonRepository(dataDirOrStore: string | JsonStore): ReadRepository & WriteRepository {
+  const store = typeof dataDirOrStore === 'string' ? new JsonStore(dataDirOrStore) : dataDirOrStore;
   const batteries = () => store.read<Battery>('batteries');
   const fitments = () => store.read<Fitment>('fitments');
   const sameCar = (type: VehicleType, make: string, model?: string) => (f: Fitment) =>

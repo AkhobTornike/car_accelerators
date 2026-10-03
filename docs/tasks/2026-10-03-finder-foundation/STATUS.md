@@ -8,9 +8,10 @@
 | GLM-01 | GLM → Claude | Next.js scaffold + vitest + `@core` alias | done by Claude (GLM hit its limit before starting); committed d88dfed | reviewed |
 | T01 | Claude | Engine unit tests `core/fitment-engine.test.ts` | 23 tests, mutation-checked; committed 7bbb586 | — |
 | GLM-02 | Claude | JSON repository + 5 public API routes (`src/server`, `src/app/api`) | done by Claude, 84 tests green, leak test mutation-checked, live curl on real data OK; uncommitted | reviewed |
+| GLM-03 | Claude | Inventory on JSON (`json-inventory.ts`: sale, void, receive, adjust, lists), admin API under `/api/admin/*` (token guard, fail-closed, lockout), 3 CSV exports, `checkCustomer` | done; 132 tests green; auth + validation mutation-checked; live smoke on a data copy OK; uncommitted | reviewed |
 | SPARK-02 | Spark | Data validator (schema, overlaps, refs, inventory checks) | prompt ready, waiting for Tornike to paste the line | — |
 | SPARK-03 | Spark | Customer finder UI on the real API | prompt ready; after SPARK-02 | — |
 
-Planned next: GLM-03 (Claude or GLM) JSON InventoryRepository + sale/CSV admin routes; SPARK-04 admin sale form (after auth exists).
+Planned next: SPARK-04 admin UI (sale form, stock, exports) once real admin login exists; real admin auth (Firebase) replaces the interim `ADMIN_API_TOKEN` guard; ADMIN path secrecy + noindex.
 Decided: price + remaining quantity are public; admin = max 2 people on ONE shared account (no roles).
 Open (Tornike): hosting Firebase vs Cloudflare; case-code/polarity convention confirmed with shop; shop's own car↔battery table.

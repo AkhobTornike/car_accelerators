@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { movementsToCsv, salesToCsv, stockToCsv, toCsv } from './csv.ts';
 import type { Battery, Sale } from './types.ts';
 
-const rows = (csv: string) => csv.replace(/^﻿/, '').split('\r\n').slice(0, -1);
+const rows = (csv: string) => csv.replace(/^\uFEFF/, '').split('\r\n').slice(0, -1);
 
 describe('toCsv', () => {
   const cols = [{ header: 'a', value: (r: { a: string | number | null | undefined }) => r.a }];
   it('starts with a BOM, uses CRLF and ends with a newline', () => {
     const out = toCsv([{ a: 1 }], cols);
-    expect(out.startsWith('﻿')).toBe(true);
+    expect(out.startsWith('\uFEFF')).toBe(true);
     expect(out.endsWith('\r\n')).toBe(true);
     expect(rows(out)).toEqual(['a', '1']);
   });
