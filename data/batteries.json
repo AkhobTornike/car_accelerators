@@ -1,0 +1,202 @@
+[
+  {
+    "id": "s44",
+    "brand": "AMPER",
+    "name": "AMPER S44",
+    "segment": "car",
+    "tech": "SMF",
+    "voltage": 12,
+    "ah": 44,
+    "cca": 360,
+    "polarity": "L+",
+    "caseCode": "L1",
+    "dimsMm": {
+      "l": 207,
+      "w": 175,
+      "h": 190
+    },
+    "warrantyMonths": 24,
+    "price": 165,
+    "stock": "in",
+    "oemCodes": [
+      "544 059 036",
+      "0 092 S40 010"
+    ],
+    "active": true
+  },
+  {
+    "id": "s60",
+    "brand": "AMPER",
+    "name": "AMPER S60",
+    "segment": "car",
+    "tech": "SMF",
+    "voltage": 12,
+    "ah": 60,
+    "cca": 480,
+    "polarity": "L+",
+    "caseCode": "L2",
+    "dimsMm": {
+      "l": 242,
+      "w": 175,
+      "h": 190
+    },
+    "warrantyMonths": 24,
+    "price": 215,
+    "stock": "in",
+    "oemCodes": [
+      "560 409 054",
+      "0 092 S50 080"
+    ],
+    "active": true
+  },
+  {
+    "id": "s77",
+    "brand": "AMPER",
+    "name": "AMPER S77",
+    "segment": "car",
+    "tech": "SMF",
+    "voltage": 12,
+    "ah": 77,
+    "cca": 680,
+    "polarity": "L+",
+    "caseCode": "L3",
+    "dimsMm": {
+      "l": 278,
+      "w": 175,
+      "h": 190
+    },
+    "warrantyMonths": 36,
+    "price": 285,
+    "stock": "in",
+    "oemCodes": [
+      "577 400 072",
+      "0 092 S60 110"
+    ],
+    "active": true
+  },
+  {
+    "id": "e70",
+    "brand": "AMPER",
+    "name": "AMPER E70",
+    "segment": "car",
+    "tech": "EFB",
+    "voltage": 12,
+    "ah": 70,
+    "cca": 640,
+    "polarity": "L+",
+    "caseCode": "L3",
+    "dimsMm": {
+      "l": 278,
+      "w": 175,
+      "h": 190
+    },
+    "warrantyMonths": 36,
+    "price": 315,
+    "stock": "in",
+    "oemCodes": [
+      "E70 L3 640",
+      "0 092 E70 640"
+    ],
+    "active": true
+  },
+  {
+    "id": "a68",
+    "brand": "AMPER",
+    "name": "AMPER A68",
+    "segment": "car",
+    "tech": "AGM",
+    "voltage": 12,
+    "ah": 68,
+    "cca": 760,
+    "polarity": "L+",
+    "caseCode": "L3",
+    "dimsMm": {
+      "l": 278,
+      "w": 175,
+      "h": 190
+    },
+    "warrantyMonths": 48,
+    "price": 445,
+    "stock": "in",
+    "oemCodes": [
+      "AGM 68 L3",
+      "0 092 AGM 068"
+    ],
+    "active": true
+  },
+  {
+    "id": "t100",
+    "brand": "AMPER",
+    "name": "AMPER T100",
+    "segment": "truck",
+    "tech": "SMF",
+    "voltage": 12,
+    "ah": 100,
+    "cca": 800,
+    "polarity": "L+",
+    "caseCode": "L5",
+    "dimsMm": {
+      "l": 353,
+      "w": 175,
+      "h": 190
+    },
+    "warrantyMonths": 24,
+    "price": 385,
+    "stock": "order",
+    "oemCodes": [
+      "610 401 084",
+      "0 092 T10 080"
+    ],
+    "active": true
+  },
+  {
+    "id": "m12",
+    "brand": "AMPER",
+    "name": "AMPER M12",
+    "segment": "moto",
+    "tech": "AGM",
+    "voltage": 12,
+    "ah": 12,
+    "cca": 210,
+    "polarity": "L+",
+    "caseCode": "MOTO",
+    "dimsMm": {
+      "l": 151,
+      "w": 87,
+      "h": 105
+    },
+    "warrantyMonths": 24,
+    "price": 145,
+    "stock": "order",
+    "oemCodes": [
+      "YTZ12S equiv",
+      "512 14"
+    ],
+    "active": true
+  },
+  {
+    "id": "d105",
+    "brand": "AMPER",
+    "name": "AMPER D105",
+    "segment": "deep",
+    "tech": "DEEP-CYCLE",
+    "voltage": 12,
+    "ah": 105,
+    "cca": 650,
+    "polarity": "L+",
+    "caseCode": "L5",
+    "dimsMm": {
+      "l": 354,
+      "w": 176,
+      "h": 190
+    },
+    "warrantyMonths": 24,
+    "price": 520,
+    "stock": "order",
+    "oemCodes": [
+      "DC 105 C20",
+      "0 092 D10 505"
+    ],
+    "active": true
+  }
+]
