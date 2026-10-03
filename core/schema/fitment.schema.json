@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "fitment.schema.json",
+  "title": "Fitment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "make", "model", "engine", "yearFrom", "yearTo", "startStop", "oem", "source", "verified"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,79}$" },
+    "type": { "enum": ["car", "van", "truck", "moto"] },
+    "make": { "type": "string", "minLength": 1 },
+    "model": { "type": "string", "minLength": 1 },
+    "engine": { "type": "string", "minLength": 1 },
+    "yearFrom": { "type": "integer", "minimum": 1950, "maximum": 2100 },
+    "yearTo": { "type": "integer", "minimum": 1950, "maximum": 2100 },
+    "startStop": { "type": "boolean" },
+    "oem": {
+      "type": "object", "additionalProperties": false, "required": ["ahMin", "ccaMin", "polarity", "techMin"],
+      "properties": {
+        "ahMin": { "type": "number", "exclusiveMinimum": 0, "maximum": 300 },
+        "ahMax": { "type": "number", "exclusiveMinimum": 0, "maximum": 300 },
+        "ccaMin": { "type": "number", "exclusiveMinimum": 0, "maximum": 2000 },
+        "polarity": { "enum": ["L+", "R+"] },
+        "caseCode": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "dimsMm": {
+          "type": "object", "additionalProperties": false, "required": ["l", "w", "h"],
+          "properties": {
+            "l": { "type": "number", "exclusiveMinimum": 0 },
+            "w": { "type": "number", "exclusiveMinimum": 0 },
+            "h": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "terminal": { "type": "string", "minLength": 1 },
+        "holdDown": { "type": "string", "minLength": 1 },
+        "techMin": { "enum": ["SMF", "EFB", "AGM"] }
+      },
+      "anyOf": [{ "required": ["caseCode"] }, { "required": ["dimsMm"] }]
+    },
+    "include": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "exclude": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "source": { "enum": ["shop", "manufacturer", "demo"] },
+    "verified": { "type": "boolean" }
+  }
+}
