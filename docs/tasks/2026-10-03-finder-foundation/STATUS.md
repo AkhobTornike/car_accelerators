@@ -9,8 +9,8 @@
 | T01 | Claude | Engine unit tests `core/fitment-engine.test.ts` | 23 tests, mutation-checked; committed 7bbb586 | — |
 | GLM-02 | Claude | JSON repository + 5 public API routes (`src/server`, `src/app/api`) | done by Claude, 84 tests green, leak test mutation-checked, live curl on real data OK; uncommitted | reviewed |
 | GLM-03 | Claude | Inventory on JSON (`json-inventory.ts`: sale, void, receive, adjust, lists), admin API under `/api/admin/*` (token guard, fail-closed, lockout), 3 CSV exports, `checkCustomer` | done; 132 tests green; auth + validation mutation-checked; live smoke on a data copy OK; uncommitted | reviewed |
-| SPARK-02 | Spark | Data validator (schema, overlaps, refs, inventory checks) | prompt ready, waiting for Tornike to paste the line | — |
-| SPARK-03 | Spark | Customer finder UI on the real API | prompt ready; after SPARK-02 | — |
+| SPARK-02 | Spark | Data validator (schema, overlaps, refs, inventory checks) | NOT done (worktree empty, no report); Spark did SPARK-03 first | — |
+| SPARK-03 | Spark | Customer finder UI on the real API | done; verified by Claude (140 tests, lint, typecheck, build; walked the flow in a real browser). Claude fixed: removed the misleading "from" price label, single-column spec rows on phones (overlap seen at 390px; fix not re-verified visually); files copied into main checkout, Spark worktree untouched | reviewed |
 
 Planned next: SPARK-04 admin UI (sale form, stock, exports) once real admin login exists; real admin auth (Firebase) replaces the interim `ADMIN_API_TOKEN` guard; ADMIN path secrecy + noindex.
 Decided: price + remaining quantity are public; admin = max 2 people on ONE shared account (no roles).
