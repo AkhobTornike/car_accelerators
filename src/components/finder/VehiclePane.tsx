@@ -45,11 +45,15 @@ export default function VehiclePane() {
     ctrl.current = c;
     Promise.all(TYPES.map((t) => getMakes(t, c.signal).catch((): string[] => [])))
       .then((lists) => {
+        // An aborted run (React StrictMode mounts effects twice in dev) turns every request into [] via the
+        // catch above; it must not report "failed" or it overrides the run that actually succeeds.
+        if (c.signal.aborted) return;
         const nonEmpty = TYPES.filter((t, i) => lists[i].length > 0);
         if (nonEmpty.length === 0) {
           setTypesFailed(true);
           return;
         }
+        setTypesFailed(false);
         setTypes(nonEmpty);
         setVType(nonEmpty[0]);
         setMakes(lists[TYPES.indexOf(nonEmpty[0])]);
