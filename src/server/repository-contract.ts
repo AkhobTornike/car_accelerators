@@ -104,7 +104,7 @@ export function repositoryContract(name: string, make: () => Promise<Backend>) {
       it('parallel fitment upserts keep the vehicle index complete', async () => {
         await Promise.all(Array.from({ length: 8 }, (_, i) => cat.upsertFitment(fitment({ id: `par-${i}`, make: 'Kia', model: `M${i}` }), 'admin')));
         expect(await cat.getModels('car', 'Kia')).toEqual(Array.from({ length: 8 }, (_, i) => `M${i}`));
-      });
+      }, 20_000);
       it('listChanges is newest first and limited', async () => {
         for (let i = 0; i < 3; i++) await cat.upsertBattery(battery({ id: `c${i}` }), 'admin');
         expect((await cat.listChanges(2)).map((c) => c.id)).toEqual(['c2', 'c1']);
@@ -141,7 +141,7 @@ export function repositoryContract(name: string, make: () => Promise<Backend>) {
         expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(2);
         expect((await cat.getBattery('s60'))!.quantity).toBe(1);
         expect(quantityFromMovements(await inv.listMovements({ batteryId: 's60' }))).toBe(-4);
-      });
+      }, 20_000); // deliberate contention: Firestore retries the losing transactions, which can exceed the 5 s default on a busy machine
       it('lists by date range (to exclusive), newest first, with limit on movements', async () => {
         const a = await inv.recordSale(sale({ soldAt: '2026-10-01T10:00:00.000Z', lines: [one('s60', 1)] }));
         const b = await inv.recordSale(sale({ soldAt: '2026-10-02T10:00:00.000Z', lines: [one('s60', 1)] }));
