@@ -27,7 +27,7 @@ export function readQuery<S extends z.ZodType>(request: Request, schema: S): z.o
 
 /** Auth check, then `run`; expected failures become 4xx JSON, anything else a generic 500. */
 export async function adminHandle(request: Request, run: () => Promise<Response>): Promise<Response> {
-  const denied = requireAdmin(request);
+  const denied = await requireAdmin(request);
   if (denied) return denied;
   try {
     return await run();

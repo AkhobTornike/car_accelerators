@@ -10,8 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "validate:data": "node --experimental-strip-types scripts/validate-data-cli.ts",
-    "test:firestore": "firebase emulators:exec --only firestore --project demo-amper \"vitest run src/server/firestore\"",
-    "seed:firestore": "node --experimental-strip-types scripts/seed-firestore.ts"
+    "seed:firestore": "node --experimental-strip-types scripts/seed-firestore.ts",
+    "test:emulators": "firebase emulators:exec --only firestore,auth --project demo-amper \"vitest run src/server/firestore src/server/admin-auth.emulator\""
   },
   "dependencies": {
     "ajv": "^8.20.0",

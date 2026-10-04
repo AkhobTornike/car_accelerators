@@ -4,7 +4,7 @@ import { createFirestoreRepositories } from './firestore-repository';
 import { getDb } from './firestore-db';
 import { repositoryContract } from './repository-contract';
 
-// Needs the Firestore emulator:  npm run test:firestore  (it starts one and sets FIRESTORE_EMULATOR_HOST).
+// Needs the Firestore emulator:  npm run test:emulators  (it starts one and sets FIRESTORE_EMULATOR_HOST).
 // Plain `npm test` skips this file ON PURPOSE and says so; REQUIRE_EMULATOR=1 turns the skip into a failure.
 const host = process.env.FIRESTORE_EMULATOR_HOST;
 
@@ -19,7 +19,7 @@ if (!host && process.env.REQUIRE_EMULATOR) {
     return createFirestoreRepositories(db, { cacheMs: 60_000 });
   });
 } else {
-  describe.skip('Firestore (emulator): skipped — run `npm run test:firestore`', () => {
+  describe.skip('Firestore (emulator): skipped — run `npm run test:emulators`', () => {
     it('skipped', () => {});
   });
 }
