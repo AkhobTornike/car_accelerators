@@ -9,10 +9,13 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "validate:data": "node --experimental-strip-types scripts/validate-data-cli.ts"
+    "validate:data": "node --experimental-strip-types scripts/validate-data-cli.ts",
+    "test:firestore": "firebase emulators:exec --only firestore --project demo-amper \"vitest run src/server/firestore\"",
+    "seed:firestore": "node --experimental-strip-types scripts/seed-firestore.ts"
   },
   "dependencies": {
     "ajv": "^8.20.0",
+    "firebase-admin": "^14.5.0",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -24,6 +27,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "firebase-tools": "^15.32.1",
     "typescript": "^5",
     "vitest": "^5.0.3"
   }
