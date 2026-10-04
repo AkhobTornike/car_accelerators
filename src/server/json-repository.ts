@@ -7,6 +7,7 @@ export const normaliseCode = (code: string) => code.trim().toUpperCase().replace
 
 const byText = (a: string, b: string) => a.localeCompare(b);
 const distinct = (xs: string[]) => [...new Set(xs)].sort(byText);
+const catalogueOrder = (a: Battery, b: Battery) => a.segment.localeCompare(b.segment) || a.tech.localeCompare(b.tech) || a.ah - b.ah || a.id.localeCompare(b.id);
 
 export function createJsonRepository(dataDirOrStore: string | JsonStore): ReadRepository & WriteRepository {
   const store = typeof dataDirOrStore === 'string' ? new JsonStore(dataDirOrStore) : dataDirOrStore;
@@ -69,6 +70,9 @@ export function createJsonRepository(dataDirOrStore: string | JsonStore): ReadRe
     },
     async getBattery(id) {
       return (await batteries()).find((b) => b.id === id) ?? null;
+    },
+    async listActiveBatteries() {
+      return (await batteries()).filter((b) => b.active).sort(catalogueOrder);
     },
     upsertBattery: (b, by) => upsert('batteries', b, by),
     upsertFitment: (f, by) => upsert('fitments', f, by),

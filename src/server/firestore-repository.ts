@@ -24,6 +24,7 @@ const MAX_INDEX_ENTRIES = 6000; // an entry is ~120 bytes; one document may hold
 const rid = (prefix: string) => `${prefix}-${randomBytes(5).toString('hex')}`;
 const byText = (a: string, b: string) => a.localeCompare(b);
 const distinct = (xs: string[]) => [...new Set(xs)].sort(byText);
+const catalogueOrder = (a: Battery, b: Battery) => a.segment.localeCompare(b.segment) || a.tech.localeCompare(b.tech) || a.ah - b.ah || a.id.localeCompare(b.id);
 const inRange = (iso: string, r?: DateRange) => (!r?.from || iso >= r.from) && (!r?.to || iso < r.to);
 const cleanNote = (n?: string) => (n?.trim() ? n.trim().slice(0, 500) : undefined);
 const chunks = <T>(xs: T[], n: number) => Array.from({ length: Math.ceil(xs.length / n) }, (_, i) => xs.slice(i * n, i * n + n));
@@ -158,6 +159,9 @@ export function createFirestoreRepositories(db: Firestore, options: FirestoreOpt
     async getBattery(id) {
       const snap = await col.batteries.doc(id).get();
       return snap.exists ? (snap.data() as Battery) : null;
+    },
+    async listActiveBatteries() {
+      return (await batteries()).filter((b) => b.active).sort(catalogueOrder);
     },
     upsertBattery: (b, by) => writeBattery(b, b.id, by),
     upsertFitment: (f, by) => writeFitment(f, f.id, by),
