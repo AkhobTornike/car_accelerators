@@ -6,6 +6,7 @@ import { JsonStore } from '@/server/json-store';
 import { setRepositoryForTests } from '@/server/repository';
 import { battery, makeDataDir } from '@/server/test-fixtures';
 import { GET as exportCsv } from './export/[kind]/route';
+import { GET as listBatteries } from './batteries/route';
 import { GET as listSales, POST as postSale } from './sales/route';
 import { POST as voidSale } from './sales/[id]/void/route';
 import { POST as adjust } from './stock/adjust/route';
@@ -48,6 +49,7 @@ describe('authentication fails closed', () => {
     ['receive', () => receive(req('/api/admin/stock/receive', { method: 'POST', body: {}, token: null }))],
     ['adjust', () => adjust(req('/api/admin/stock/adjust', { method: 'POST', body: {}, token: null }))],
     ['export', () => exportCsv(req('/api/admin/export/sales', { token: null }), ctx({ kind: 'sales' }))],
+    ['batteries', () => listBatteries(req('/api/admin/batteries', { token: null }))],
   ];
   it.each(routes)('%s without a token → 401, no data, no caching', async (_n, call) => {
     const res = await call();
@@ -135,6 +137,17 @@ describe('sales', () => {
     expect((await cat.getBattery('s60'))!.quantity).toBe(5);
     expect((await v('again')).status).toBe(409);
     expect((await v('x', 'nope')).status).toBe(404);
+  });
+});
+
+describe('battery list', () => {
+  it('returns the full records with cost price and quantity, no caching', async () => {
+    const res = await listBatteries(req('/api/admin/batteries'));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+    const { batteries } = await res.json();
+    expect(batteries.map((b: { id: string }) => b.id).sort()).toEqual(['e70', 's60']);
+    expect(batteries.find((b: { id: string }) => b.id === 's60')).toMatchObject({ costPrice: 150, quantity: 5 });
   });
 });
 
