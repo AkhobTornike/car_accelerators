@@ -16,6 +16,8 @@ export interface ReadRepository {
   /** Reverse lookup by the code printed on the old battery. Exact, case/space-insensitive. */
   findByOldCode(code: string): Promise<Battery[]>;
   getBattery(id: string): Promise<Battery | null>;
+  /** Active batteries only, cheap to call often (cached on Firestore). Public-safe filtering is the caller's job (see public-dto). */
+  listActiveBatteries(): Promise<Battery[]>;
 }
 
 export interface ChangeEntry { at: string; by: string; action: 'create' | 'update' | 'delete'; entity: 'battery' | 'fitment'; id: string; before: unknown; after: unknown }

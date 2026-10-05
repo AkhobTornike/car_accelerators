@@ -83,6 +83,26 @@ export function repositoryContract(name: string, make: () => Promise<Backend>) {
       });
     });
 
+    describe('active catalogue', () => {
+      it('listActiveBatteries: active only, stable order by segment, tech, ah, id', async () => {
+        for (const b of [
+          battery({ id: 'z-car', tech: 'SMF', ah: 100 }),
+          battery({ id: 'a-car', tech: 'SMF', ah: 60 }),
+          battery({ id: 'm1', segment: 'moto', tech: 'AGM', ah: 12, cca: 210, caseCode: 'MOTO' }),
+          battery({ id: 't1', segment: 'truck', ah: 100 }),
+        ]) await cat.upsertBattery(b, 'seed');
+        expect((await cat.listActiveBatteries()).map((b) => b.id))
+          .toEqual(['e70', 'a-car', 's60', 'unk', 'z-car', 'm1', 't1']);
+      });
+      it('listActiveBatteries sees an upsert immediately: deactivate, edit, reactivate', async () => {
+        expect((await cat.listActiveBatteries()).map((b) => b.id)).toContain('s60');
+        await cat.upsertBattery(battery({ id: 's60', name: 'S60', active: false }), 'admin');
+        expect((await cat.listActiveBatteries()).map((b) => b.id)).not.toContain('s60');
+        await cat.upsertBattery(battery({ id: 's60', name: 'S60', price: 99 }), 'admin');
+        expect((await cat.listActiveBatteries()).find((b) => b.id === 's60')).toMatchObject({ price: 99 });
+      });
+    });
+
     describe('catalogue writes', () => {
       it('upsert logs create then update with before/after; delete logs delete; missing delete is a no-op', async () => {
         await cat.upsertBattery(battery({ id: 'new', price: 100 }), 'admin');

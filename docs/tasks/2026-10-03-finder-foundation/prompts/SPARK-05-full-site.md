@@ -1,0 +1,34 @@
+# SPARK-05 — the full website: every section of demo_v1 on the real stack
+
+Read `/home/tornike/Work/car_accelerators/docs/tasks/2026-10-03-finder-foundation/00-COMMON-RULES.md` first. Task id: `SPARK-05`, slug `full-site`.
+
+**Precondition:** GLM-05 must be merged into `origin/main` (it adds `src/server/catalog.ts` with `getPublicCatalog()`). After you create your worktree check `ls src/server/catalog.ts`. If the file is missing, STOP and write a report saying so — do not create it yourself.
+
+## Goal
+Today the live home page contains only the battery finder. `demo_v1/index.html` (a single static file, light industrial design, AMPER.GE) has the complete page. Rebuild ALL of it as the real Next.js home page, keeping the visual design, using real data where the demo had hard-coded data.
+
+## Source and target
+- Source of truth for look, copy and structure: `demo_v1/index.html` (`<style>` block, markup lines ~502–975). Sections in order: header + nav, `hero`, `#finder` (already built — keep `src/components/finder/**` working), `#catalog`, `#tech`, `#why`, `#how`, `#faq`, `#contact`, footer, mobile contact bar (`.mbar`), the JSON-LD block (line ~458), skip link.
+- The page is a **server component** (`src/app/page.tsx`) composed from components in `src/components/site/**`. Only interactive pieces are client components (mobile menu, catalogue filters, FAQ if you use JS, the "not sure" form).
+
+## Files you may create/change (in your worktree)
+`src/app/page.tsx`, `src/app/layout.tsx` (metadata, skip link, html lang), `src/app/globals.css` (APPEND new rules at the end; do not edit existing rules), `src/components/site/**`, `src/components/finder/**` (ONLY to replace hard-coded phone/WhatsApp numbers with the shared contact module), `src/lib/site/**` (helpers + their tests), `public/images/**`. Nothing under `src/server/`, `src/app/api/`, `core/`, `data/`, `docs/`, `package.json` (no new dependencies).
+
+## Requirements
+1. **Copy in one file.** All visible text in `src/components/site/content.ts` as one typed object (English now — Georgian comes later as a second object of the same shape, so no string literals in JSX). Include the demo footer sentence about demo/fictional data as `content.demoNotice` so it can be removed in one place.
+2. **Contact in one module.** `src/lib/site/contact.ts` exports phone, WhatsApp number, e-mail, address, opening hours; values from `NEXT_PUBLIC_SHOP_PHONE`, `NEXT_PUBLIC_SHOP_WHATSAPP`, `NEXT_PUBLIC_SHOP_EMAIL` with the demo numbers as fallbacks (document the variables in your report; do not edit `.env.example`). One tested helper builds `wa.me` links (URL-encoded text) and one builds `tel:` links. Header, hero, catalogue cards, finder results, contact section, footer and the mobile bar all use it.
+3. **Catalogue (`#catalog`).** Server component calls `getPublicCatalog()` (no HTTP). Cards: battery render, name, tech badge, spec line (`polarity, caseCode, Ah, CCA`), price (`null` → "Ask for price"), stock text from `quantity`/`stock` (same wording rules as the finder's result card — reuse its helper, do not copy it), warranty, WhatsApp button with a prefilled message. Client-side filter chips (All / Car / Truck / Moto / Deep-cycle and by tech) that only hide/show cards. The demo drew each battery with a hand-made SVG chosen by case size: port that generator into a pure component `BatteryRender` driven by `caseCode` and `tech` (unknown case code → a sensible default render, never a crash). Empty catalogue → a clear empty state.
+4. **"Not sure" path.** The demo has a third way to search (photo + VIN). There is no upload backend and none must be added: build the form (name, phone, car make/model/year, VIN optional, note) so that submitting opens WhatsApp with a message containing the filled fields and the sentence asking the customer to attach the photo of the old battery. Validate required fields client-side; nothing is stored or sent to our server. Put it as a third tab of the finder (`Finder.tsx` tabs) in the demo's style.
+5. **Other sections** (`#tech`, `#why`, `#how`, `#faq`, `#contact`, footer, mobile bar, header nav with working anchors and a mobile menu): same content and structure as the demo. FAQ: use `<details>/<summary>` (no JS needed) unless the demo's behaviour requires more. The mobile contact bar is fixed at the bottom on phones only and must not cover page content (add bottom padding).
+6. **Images.** The demo embeds two photos as base64 data URIs (hero, workshop). Extract each to `public/images/hero.jpg` and `public/images/workshop.jpg` (one-off `node` command, do not commit a script), use `next/image` with explicit width/height and meaningful `alt`; hero image `priority`, the other lazy.
+7. **SEO.** `export const metadata` in `layout.tsx`/`page.tsx` (title, description, Open Graph, `metadataBase` from `SITE_URL` env with localhost fallback). JSON-LD: adapt the demo's block (LocalBusiness) and add `Product` entries with `Offer` (price in GEL, availability from stock) generated from the catalogue; serialise with `JSON.stringify` and escape `<` as `<` so data can never close the script tag. A pure builder function in `src/lib/site/json-ld.ts` with tests (escaping, null price omitted, availability mapping).
+8. **Design rules.** LIGHT theme only, reuse the demo's CSS variables and the fonts already loaded in `layout.tsx`. 360 px phones: no horizontal scroll, tap targets ≥ 44 px, no text under 12 px, real landmarks (`header/nav/main/footer`), one `h1`, heading order, skip link, visible focus ring, `aria-label`s on icon-only controls, `prefers-reduced-motion` respected for any animation, no pure `#FFF`, no emojis. Do not break the finder.
+
+## Tests and checks
+- Unit tests (vitest, node environment) for: contact link helpers, JSON-LD builder, catalogue filter helper, `BatteryRender` parameter mapping (pure function that returns the shape/dimensions, so it can be tested without a DOM).
+- Acceptance (paste real output tails): `npm run lint`, `npm run typecheck`, `npm run test` (state the count), `npm run build` — all green.
+- `npm run dev -- --port 3106` (data: `DATA_DIR=/tmp/amper-site-data` after `cp -r data /tmp/amper-site-data`); `curl -s localhost:3106/` must contain every section id (`finder`, `catalog`, `tech`, `why`, `how`, `faq`, `contact`), exactly one `<h1`, a parsable JSON-LD block (pipe it through `node -e` and `JSON.parse` it — show the result), and no `demo_v1/` references. Stop the server by its exact PID, never `pkill`.
+- You have no browser to judge the visuals: **say so plainly** and list what you could not check (layout at 360 px, section spacing, the SVG renders). Claude will review it in a real browser. Do not claim a visual check you did not do.
+- `git status --short` — only allowed files.
+
+Report: `/home/tornike/Work/car_accelerators/docs/tasks/2026-10-03-finder-foundation/reports/SPARK-05-full-site.md`

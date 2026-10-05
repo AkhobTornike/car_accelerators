@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createJsonRepository } from '@/server/json-repository';
 import { setRepositoryForTests } from '@/server/repository';
 import { battery, makeDataDir } from '@/server/test-fixtures';
+import { GET as catalog } from './catalog/route';
 import { GET as engines } from './vehicles/engines/route';
 import { GET as makes } from './vehicles/makes/route';
 import { GET as models } from './vehicles/models/route';
@@ -89,6 +90,48 @@ describe('server errors', () => {
     expect(text).toBe('{"error":"server_error"}');
     expect(text).not.toContain('secret');
     expect(spy).toHaveBeenCalled();
+  });
+});
+
+describe('catalogue endpoint', () => {
+  it('lists active batteries in catalogue order with the shared cache header', async () => {
+    const res = await call(catalog, '');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Cache-Control')).toBe('public, max-age=300');
+    expect((await json(res)).batteries.map((b: { id: string }) => b.id)).toEqual(['e70', 's60']);
+  });
+  it('filters by segment and tech, ignores unknown params', async () => {
+    expect((await json(await call(catalog, 'tech=EFB'))).batteries.map((b: { id: string }) => b.id)).toEqual(['e70']);
+    expect((await json(await call(catalog, 'segment=car&tech=SMF'))).batteries.map((b: { id: string }) => b.id)).toEqual(['s60']);
+    expect((await json(await call(catalog, 'segment=car&foo=bar'))).batteries).toHaveLength(2);
+    expect((await json(await call(catalog, ''))).batteries).toHaveLength(2);
+  });
+  it('bad filter values are 400 invalid_request', async () => {
+    for (const q of ['tech=nope', 'segment=boat', 'tech=', 'segment=']) {
+      const res = await call(catalog, q);
+      expect(res.status).toBe(400);
+      expect(await json(res)).toEqual({ error: 'invalid_request' });
+    }
+  });
+  it('never leaks private fields, never shows inactive batteries, quantity only when known', async () => {
+    const dir = await makeDataDir({
+      batteries: [
+        battery({ id: 's60', oemCodes: ['QQ 888 999'], costPrice: 77777 }),
+        battery({ id: 'unk', name: 'Unknown', quantity: undefined }),
+        battery({ id: 'dead', name: 'Dead', active: false, oemCodes: ['DEAD 001'], costPrice: 1 }),
+      ],
+    });
+    setRepositoryForTests(createJsonRepository(dir));
+    const body = await (await call(catalog, '')).text();
+    expect(body).toContain('"id":"s60"');
+    expect(body).toContain('"id":"unk"');
+    expect(body).not.toContain('"id":"dead"');
+    for (const forbidden of ['costPrice', '77777', 'oemCodes', 'QQ 888', 'DEAD 001', 'active', 'verified', 'source']) {
+      expect(body).not.toContain(forbidden);
+    }
+    const batteries = JSON.parse(body).batteries as { id: string; quantity?: number }[];
+    expect(batteries.find((b) => b.id === 's60')).toMatchObject({ quantity: 5 });
+    expect(batteries.find((b) => b.id === 'unk')).not.toHaveProperty('quantity');
   });
 });
 
