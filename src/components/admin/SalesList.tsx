@@ -7,8 +7,10 @@ import { labels } from './labels';
 
 const t = labels.sales;
 
+// The shop's calendar day (Tbilisi), not UTC: between 00:00 and 04:00 local time UTC is still "yesterday".
+const tbilisiDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tbilisi', year: 'numeric', month: '2-digit', day: '2-digit' });
 function isoDay(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  return tbilisiDay.format(d);
 }
 
 function defaultRange(): { from: string; to: string } {

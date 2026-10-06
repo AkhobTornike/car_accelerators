@@ -158,6 +158,7 @@ export default function StockTable({ onSignOut }: { onSignOut: () => void }) {
             caseCodes={caseCodes}
             onClose={() => setPanel(null)}
             onSaved={saved}
+            onImages={(id, imgs) => setRows((rs) => rs?.map((r) => (r.id === id ? { ...r, images: imgs } : r)) ?? null)}
           />
         </div>
       )}
