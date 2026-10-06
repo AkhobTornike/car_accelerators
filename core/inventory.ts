@@ -70,3 +70,11 @@ export function applyMovements(battery: Battery, movements: Pick<NewMovement, 'b
   else if (quantity > 0 && stock === 'out') stock = 'in';
   return { ...battery, quantity, stock };
 }
+
+/** Keep `stock` consistent with a known quantity: 0 → 'out', positive after 'out' → 'in'. 'order' is a manual state and is left alone. */
+export function normaliseStock<T extends { quantity?: number; stock: Battery['stock'] }>(b: T): T {
+  if (b.quantity === undefined) return b;
+  if (b.quantity === 0 && b.stock === 'in') return { ...b, stock: 'out' };
+  if (b.quantity > 0 && b.stock === 'out') return { ...b, stock: 'in' };
+  return b;
+}

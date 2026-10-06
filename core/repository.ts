@@ -45,6 +45,16 @@ export interface InventoryRepository {
   receiveStock(batteryId: string, qty: number, opts?: { unitCost?: number | null; note?: string }): Promise<StockMovement>;
   /** Set the real counted quantity; records the difference as an 'adjust' movement (no-op error if equal). */
   adjustStock(batteryId: string, countedQuantity: number, note?: string): Promise<StockMovement>;
+  /** New product. `initialQuantity` becomes an 'initial' ledger movement (quantity is never set directly). Throws 'conflict' if the id exists. */
+  createBattery(battery: Omit<Battery, 'quantity'>, initialQuantity: number | undefined, by: string): Promise<Battery>;
+  /** Change catalogue fields of a product. `quantity` is NOT taken from the input — it only moves through the ledger. Throws 'not_found'. */
+  updateBattery(id: string, fields: Partial<Omit<Battery, 'id' | 'quantity'>>, by: string): Promise<Battery>;
+  /**
+   * Delete a product for good. Refused with 'has_history' when it has any stock movement (and therefore any sale):
+   * the ledger and old sales must stay readable — hide it instead (updateBattery with active:false).
+   * On success its id is also removed from every fitment's include/exclude list.
+   */
+  removeBattery(id: string, by: string): Promise<{ removedFromFitments: number }>;
   getSale(id: string): Promise<Sale | null>;
   listSales(range?: DateRange): Promise<{ sales: Sale[]; voids: SaleVoid[] }>;
   listMovements(opts?: { batteryId?: string; range?: DateRange; limit?: number }): Promise<StockMovement[]>;

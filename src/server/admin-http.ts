@@ -4,7 +4,7 @@ import { InventoryError } from './inventory-errors';
 
 const NO_STORE = { 'Cache-Control': 'no-store' };
 const MAX_BODY = 100_000;
-const STATUS = { invalid_sale: 422, invalid_input: 400, not_found: 404, already_voided: 409, no_change: 409 } as const;
+const STATUS = { invalid_sale: 422, invalid_input: 400, not_found: 404, already_voided: 409, no_change: 409, conflict: 409, has_history: 409 } as const;
 
 export const adminJson = (body: unknown, status = 200) => Response.json(body, { status, headers: NO_STORE });
 

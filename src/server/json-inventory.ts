@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
-import type { DateRange, InventoryRepository } from '@core/repository';
-import { applyMovements, checkCustomer, checkSale, movementsForSale, movementsForVoid, saleTotal } from '@core/inventory';
-import type { Battery, NewMovement, Sale, SaleVoid, StockMovement } from '@core/types';
+import type { ChangeEntry, DateRange, InventoryRepository } from '@core/repository';
+import { applyMovements, checkCustomer, checkSale, movementsForSale, movementsForVoid, normaliseStock, saleTotal } from '@core/inventory';
+import type { Battery, Fitment, NewMovement, Sale, SaleVoid, StockMovement } from '@core/types';
 import { InventoryError } from './inventory-errors';
 import type { JsonStore } from './json-store';
 
@@ -30,6 +30,12 @@ export function createJsonInventory(store: JsonStore): InventoryRepository {
     const touched = new Set(news.map((m) => m.batteryId));
     await store.write('batteries', batteries.map((b) => (touched.has(b.id) ? applyMovements(b, news) : b)));
     return stored;
+  }
+
+  /** Append to the shared change log. Call only inside withLock. */
+  async function logChange(entity: ChangeEntry['entity'], action: ChangeEntry['action'], id: string, before: unknown, after: unknown, by: string) {
+    const log = await store.read<ChangeEntry>('changes', { optional: true });
+    await store.write('changes', [...log, { at: new Date().toISOString(), by, action, entity, id, before, after }]);
   }
 
   return {
@@ -97,6 +103,56 @@ export function createJsonInventory(store: JsonStore): InventoryRepository {
           ...(cleanNote(note) ? { note: cleanNote(note) } : {}),
         }]);
         return m;
+      });
+    },
+
+    createBattery(input, initialQuantity, by) {
+      return store.withLock(async () => {
+        if (initialQuantity !== undefined && (!Number.isInteger(initialQuantity) || initialQuantity < 0)) {
+          throw new InventoryError('invalid_input', ['initial quantity must be an integer >= 0']);
+        }
+        const batteries = await read.batteries();
+        if (batteries.some((b) => b.id === input.id)) throw new InventoryError('conflict', ['a product with this id already exists']);
+        const created: Battery = normaliseStock({ ...input, ...(initialQuantity === undefined ? {} : { quantity: 0 }) });
+        await store.write('batteries', [...batteries, created]);
+        await logChange('battery', 'create', created.id, null, created, by);
+        if (initialQuantity) {
+          await commitMovements(await read.batteries(), [{ at: new Date().toISOString(), batteryId: created.id, delta: initialQuantity, kind: 'initial', note: 'opening stock' }]);
+        }
+        return (await read.batteries()).find((b) => b.id === created.id)!;
+      });
+    },
+
+    updateBattery(id, fields, by) {
+      return store.withLock(async () => {
+        const batteries = await read.batteries();
+        const before = batteries.find((b) => b.id === id);
+        if (!before) throw new InventoryError('not_found');
+        const after = normaliseStock({ ...before, ...fields, id, ...(before.quantity === undefined ? {} : { quantity: before.quantity }) } as Battery);
+        await store.write('batteries', batteries.map((b) => (b.id === id ? after : b)));
+        await logChange('battery', 'update', id, before, after, by);
+        return after;
+      });
+    },
+
+    removeBattery(id, by) {
+      return store.withLock(async () => {
+        const batteries = await read.batteries();
+        const before = batteries.find((b) => b.id === id);
+        if (!before) throw new InventoryError('not_found');
+        const used = (await read.movements()).some((m) => m.batteryId === id) || (await read.sales()).some((s) => s.lines.some((l) => l.batteryId === id));
+        if (used) throw new InventoryError('has_history', ['this product has stock movements or sales; hide it instead of deleting it']);
+        await store.write('batteries', batteries.filter((b) => b.id !== id));
+        const fitments = await store.read<Fitment>('fitments');
+        let touched = 0;
+        const cleaned = fitments.map((f) => {
+          if (!f.include?.includes(id) && !f.exclude?.includes(id)) return f;
+          touched++;
+          return { ...f, ...(f.include ? { include: f.include.filter((x) => x !== id) } : {}), ...(f.exclude ? { exclude: f.exclude.filter((x) => x !== id) } : {}) };
+        });
+        if (touched) await store.write('fitments', cleaned);
+        await logChange('battery', 'delete', id, before, { removedFromFitments: touched }, by);
+        return { removedFromFitments: touched };
       });
     },
 

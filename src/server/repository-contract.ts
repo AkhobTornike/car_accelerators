@@ -173,6 +173,70 @@ export function repositoryContract(name: string, make: () => Promise<Backend>) {
       });
     });
 
+    describe('product create, update, delete', () => {
+      const fresh = (o: Partial<Parameters<typeof inv.createBattery>[0]> = {}) => {
+        const { quantity: _q, ...rest } = battery({ id: 'new-1', name: 'New one', price: 100, ...o });
+        void _q;
+        return rest;
+      };
+      it('creates a product; the opening quantity goes through the ledger as an "initial" movement', async () => {
+        const b = await inv.createBattery(fresh(), 7, 'admin');
+        expect(b).toMatchObject({ id: 'new-1', quantity: 7, stock: 'in' });
+        expect(await cat.getBattery('new-1')).toMatchObject({ quantity: 7 });
+        expect(await inv.listMovements({ batteryId: 'new-1' })).toMatchObject([{ kind: 'initial', delta: 7 }]);
+        expect((await cat.listActiveBatteries()).map((x) => x.id)).toContain('new-1');
+        expect((await cat.listChanges(5)).find((c) => c.id === 'new-1')).toMatchObject({ action: 'create', entity: 'battery' });
+      });
+      it('opening quantity 0 → out of stock, no movement; undefined → quantity unknown', async () => {
+        expect(await inv.createBattery(fresh({ id: 'zero' }), 0, 'admin')).toMatchObject({ quantity: 0, stock: 'out' });
+        expect(await inv.listMovements({ batteryId: 'zero' })).toEqual([]);
+        expect((await inv.createBattery(fresh({ id: 'unknown' }), undefined, 'admin')).quantity).toBeUndefined();
+      });
+      it('refuses a duplicate id and a bad quantity, and stores nothing', async () => {
+        await inv.createBattery(fresh(), 1, 'admin');
+        expect((await failure(inv.createBattery(fresh({ name: 'again' }), 5, 'admin'))).code).toBe('conflict');
+        expect((await failure(inv.createBattery(fresh({ id: 'x2' }), -1, 'admin'))).code).toBe('invalid_input');
+        expect((await failure(inv.createBattery(fresh({ id: 'x3' }), 1.5, 'admin'))).code).toBe('invalid_input');
+        expect(await cat.getBattery('x2')).toBeNull();
+        expect((await cat.getBattery('new-1'))!.quantity).toBe(1);
+      });
+      it('a new product is matched to cars by the rules without touching any fitment', async () => {
+        await inv.createBattery(fresh({ id: 'fits-bmw', polarity: 'R+', caseCode: 'L2', ah: 60, cca: 540, price: 50 }), 3, 'admin');
+        expect((await cat.findBatteriesForFitment('car-bmw-3-2'))[0].battery.id).toBe('fits-bmw'); // cheapest OEM-equivalent first
+      });
+      it('updates catalogue fields but never the quantity; keeps stock consistent; unknown id → not_found', async () => {
+        const b = await inv.updateBattery('s60', { price: 99, name: 'S60 renamed', active: false }, 'admin');
+        expect(b).toMatchObject({ price: 99, name: 'S60 renamed', active: false, quantity: 5 });
+        expect((await cat.listActiveBatteries()).map((x) => x.id)).not.toContain('s60');
+        expect((await cat.listChanges(3))[0]).toMatchObject({ action: 'update', id: 's60', before: { price: 215 }, after: { price: 99 } });
+        expect((await failure(inv.updateBattery('nope', { price: 1 }, 'admin'))).code).toBe('not_found');
+        await inv.updateBattery('s60', { stock: 'out' }, 'admin'); // contradicts quantity 5 → corrected
+        expect((await cat.getBattery('s60'))!.stock).toBe('in');
+      });
+      it('removes a product without history and cleans it out of every fitment pin', async () => {
+        await cat.upsertFitment(fitment({ id: 'pin-1', make: 'Kia', model: 'Rio', include: ['e70', 'unk'], exclude: ['unk'] }), 'seed');
+        await cat.upsertFitment(fitment({ id: 'pin-2', make: 'Kia', model: 'Ceed', include: ['unk'] }), 'seed');
+        await cat.upsertFitment(fitment({ id: 'pin-3', make: 'Kia', model: 'Soul' }), 'seed');
+        expect(await inv.removeBattery('unk', 'admin')).toEqual({ removedFromFitments: 2 });
+        expect(await cat.getBattery('unk')).toBeNull();
+        expect(await cat.getFitment('pin-1')).toMatchObject({ include: ['e70'] });
+        expect((await cat.getFitment('pin-1'))!.exclude ?? []).toEqual([]);
+        expect((await cat.getFitment('pin-2'))!.include ?? []).toEqual([]);
+        expect((await cat.listChanges(5)).find((c) => c.action === 'delete')).toMatchObject({ id: 'unk', entity: 'battery' });
+        expect((await failure(inv.removeBattery('unk', 'admin'))).code).toBe('not_found');
+      });
+      it('refuses to delete a product that has any stock movement or sale; hiding it still works', async () => {
+        await inv.recordSale(sale({ lines: [one('s60', 1)] }));
+        const err = await failure(inv.removeBattery('s60', 'admin'));
+        expect(err.code).toBe('has_history');
+        expect(await cat.getBattery('s60')).not.toBeNull();
+        await inv.receiveStock('e70', 1);
+        expect((await failure(inv.removeBattery('e70', 'admin'))).code).toBe('has_history');
+        await inv.updateBattery('s60', { active: false }, 'admin');
+        expect((await cat.listActiveBatteries()).map((x) => x.id)).not.toContain('s60');
+      });
+    });
+
     describe('voids', () => {
       it('returns the stock, keeps the sale, and refuses a second void', async () => {
         const s = await inv.recordSale(sale());
