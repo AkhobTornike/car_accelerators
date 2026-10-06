@@ -19,7 +19,7 @@ describe('getPublicCatalog', () => {
     expect(catalog.map((b) => b.id)).toEqual(['a-car', 's60']);
     for (const b of catalog) {
       expect(Object.keys(b).sort()).toEqual(
-        ['ah', 'brand', 'caseCode', 'cca', 'dimsMm', 'id', 'name', 'polarity', 'price', 'segment', 'stock', 'tech', 'warrantyMonths', ...(b.quantity === undefined ? [] : ['quantity'])].sort(),
+        ['ah', 'brand', 'caseCode', 'cca', 'dimsMm', 'id', 'images', 'name', 'polarity', 'price', 'segment', 'stock', 'tech', 'warrantyMonths', ...(b.quantity === undefined ? [] : ['quantity'])].sort(),
       );
     }
     expect(catalog.find((b) => b.id === 's60')).toMatchObject({ quantity: 5, price: 200 });

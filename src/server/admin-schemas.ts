@@ -61,6 +61,7 @@ const productFields = {
   stock: z.enum(['in', 'order', 'out']),
   oemCodes: z.array(z.string().trim().min(1).max(40)).max(40).transform((a) => [...new Set(a)]),
   active: z.boolean(),
+  images: z.array(z.string().url().startsWith('https://').max(300)).max(6),
 };
 
 const slugBase = (name: string) =>
@@ -73,6 +74,7 @@ export const newBatteryBody = z.object({
   stock: productFields.stock.default('in'),
   oemCodes: productFields.oemCodes.default([]),
   active: productFields.active.default(true),
+  images: productFields.images.default([]),
   quantity: z.number().int().min(0).max(100000).optional(), // opening stock → ledger 'initial' movement
 }).transform((b): { battery: Omit<Battery, 'quantity'>; initialQuantity: number | undefined } => {
   const { quantity, id, ...rest } = b;
