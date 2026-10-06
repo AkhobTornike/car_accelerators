@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
-import type { Firestore, Transaction } from 'firebase-admin/firestore';
-import { applyMovements, checkCustomer, checkSale, movementsForSale, movementsForVoid, saleTotal } from '@core/inventory';
+import { FieldValue, type Firestore, type Transaction } from 'firebase-admin/firestore';
+import { applyMovements, checkCustomer, checkSale, movementsForSale, movementsForVoid, normaliseStock, saleTotal } from '@core/inventory';
 import { matchBatteries, yearInRange } from '@core/fitment-engine';
 import type { ChangeEntry, DateRange, EngineOption, InventoryRepository, ReadRepository, WriteRepository } from '@core/repository';
 import type { Battery, Fitment, NewMovement, Sale, SaleVoid, StockMovement, VehicleType } from '@core/types';
@@ -267,6 +267,71 @@ export function createFirestoreRepositories(db: Firestore, options: FirestoreOpt
       });
       invalidate();
       return m;
+    },
+
+    async createBattery(input, initialQuantity, by) {
+      if (initialQuantity !== undefined && (!Number.isInteger(initialQuantity) || initialQuantity < 0)) {
+        throw new InventoryError('invalid_input', ['initial quantity must be an integer >= 0']);
+      }
+      const created = await db.runTransaction(async (tx) => {
+        const ref = col.batteries.doc(input.id);
+        if ((await tx.get(ref)).exists) throw new InventoryError('conflict', ['a product with this id already exists']);
+        const base: Battery = normaliseStock({ ...input, ...(initialQuantity === undefined ? {} : { quantity: 0 }) });
+        let withStock = base;
+        if (initialQuantity) {
+          // writeMovements stores the ledger entry AND the battery document with the new quantity.
+          writeMovements(tx, [base], [{ at: new Date().toISOString(), batteryId: base.id, delta: initialQuantity, kind: 'initial', note: 'opening stock' }]);
+          withStock = applyMovements(base, [{ batteryId: base.id, delta: initialQuantity }]);
+        } else {
+          tx.set(ref, base);
+        }
+        tx.set(col.changes.doc(), { at: new Date().toISOString(), by, action: 'create', entity: 'battery', id: base.id, before: null, after: withStock });
+        return withStock;
+      });
+      invalidate();
+      return created;
+    },
+
+    async updateBattery(id, fields, by) {
+      const after = await db.runTransaction(async (tx) => {
+        const ref = col.batteries.doc(id);
+        const snap = await tx.get(ref);
+        if (!snap.exists) throw new InventoryError('not_found');
+        const before = snap.data() as Battery;
+        const next = normaliseStock({ ...before, ...fields, id, ...(before.quantity === undefined ? {} : { quantity: before.quantity }) } as Battery);
+        tx.set(ref, next);
+        tx.set(col.changes.doc(), { at: new Date().toISOString(), by, action: 'update', entity: 'battery', id, before, after: next });
+        return next;
+      });
+      invalidate();
+      return after;
+    },
+
+    async removeBattery(id, by) {
+      // Phase 1 (one transaction): the product must exist and must have no stock movement (every sale has one).
+      await db.runTransaction(async (tx) => {
+        const ref = col.batteries.doc(id);
+        const snap = await tx.get(ref);
+        if (!snap.exists) throw new InventoryError('not_found');
+        const used = await tx.get(col.movements.where('batteryId', '==', id).limit(1));
+        if (!used.empty) throw new InventoryError('has_history', ['this product has stock movements or sales; hide it instead of deleting it']);
+        tx.delete(ref);
+        tx.set(col.changes.doc(), { at: new Date().toISOString(), by, action: 'delete', entity: 'battery', id, before: snap.data(), after: null });
+      });
+      // Phase 2: drop the id from fitment pins. Not part of the transaction (a transaction is limited to 500 writes);
+      // it is idempotent and a failure here is reported by the data validator as unknown-battery-ref.
+      const pinned = new Map<string, FirebaseFirestore.DocumentReference>();
+      for (const field of ['include', 'exclude'] as const) {
+        for (const d of (await col.fitments.where(field, 'array-contains', id).get()).docs) pinned.set(d.id, d.ref);
+      }
+      const refs = [...pinned.values()];
+      for (const group of chunks(refs, 400)) {
+        const batch = db.batch();
+        for (const r of group) batch.update(r, { include: FieldValue.arrayRemove(id), exclude: FieldValue.arrayRemove(id) });
+        await batch.commit();
+      }
+      invalidate();
+      return { removedFromFitments: refs.length };
     },
 
     async getSale(id) {

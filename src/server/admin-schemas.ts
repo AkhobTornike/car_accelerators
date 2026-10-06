@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { NewSale } from '@core/types';
+import type { Battery, NewSale } from '@core/types';
 
 const blankToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
 const optionalText = (max: number) => z.preprocess(blankToUndefined, z.string().trim().max(max).optional());
@@ -39,3 +39,47 @@ const dateOr = (day: (d: string) => string) =>
   z.preprocess(blankToUndefined, z.union([z.iso.datetime(), z.iso.date().transform(day)]).optional());
 export const rangeQuery = z.object({ from: dateOr(dayStart), to: dateOr(nextDayStart) });
 export const exportKind = z.enum(['sales', 'stock', 'movements']);
+
+// ---- products (batteries) ----
+const productText = (max: number) => z.string().trim().min(1).max(max);
+const upper = (v: unknown) => (typeof v === 'string' ? v.trim().toUpperCase() : v);
+const productFields = {
+  brand: productText(60),
+  name: productText(80),
+  segment: z.enum(['car', 'truck', 'moto', 'deep']),
+  tech: z.enum(['SMF', 'EFB', 'AGM', 'DEEP-CYCLE']),
+  ah: z.number().positive().max(300),
+  cca: z.number().positive().max(2000),
+  polarity: z.enum(['L+', 'R+']),
+  caseCode: z.preprocess(upper, z.string().regex(/^[A-Z0-9-]{1,20}$/)),
+  dimsMm: z.object({ l: z.number().positive().max(2000), w: z.number().positive().max(2000), h: z.number().positive().max(2000) }),
+  terminal: z.preprocess(blankToUndefined, z.string().trim().min(1).max(40).optional()),
+  holdDown: z.preprocess(blankToUndefined, z.string().trim().min(1).max(40).optional()),
+  warrantyMonths: z.number().int().min(0).max(120),
+  price: money.nullable(),
+  costPrice: money.nullable().optional(),
+  stock: z.enum(['in', 'order', 'out']),
+  oemCodes: z.array(z.string().trim().min(1).max(40)).max(40).transform((a) => [...new Set(a)]),
+  active: z.boolean(),
+};
+
+const slugBase = (name: string) =>
+  name.normalize('NFKD').replace(/[^\x00-\x7f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'product';
+
+export const newBatteryBody = z.object({
+  id: z.string().trim().regex(/^[a-z0-9][a-z0-9-]{0,39}$/).optional(),
+  ...productFields,
+  brand: productFields.brand.default('AMPER'),
+  stock: productFields.stock.default('in'),
+  oemCodes: productFields.oemCodes.default([]),
+  active: productFields.active.default(true),
+  quantity: z.number().int().min(0).max(100000).optional(), // opening stock → ledger 'initial' movement
+}).transform((b): { battery: Omit<Battery, 'quantity'>; initialQuantity: number | undefined } => {
+  const { quantity, id, ...rest } = b;
+  const generated = `${slugBase(b.name)}-${Math.random().toString(16).slice(2, 6)}`.slice(0, 40);
+  return { battery: { ...rest, id: id ?? generated, voltage: 12 }, initialQuantity: quantity };
+});
+
+// PATCH: any subset of the catalogue fields. Unknown keys — notably `quantity` and `id` — are rejected (strict):
+// stock levels only change through sales, receive and count, never by editing the product.
+export const patchBatteryBody = z.object(productFields).partial().strict();
