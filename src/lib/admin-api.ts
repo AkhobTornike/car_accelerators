@@ -2,20 +2,27 @@ import { getFirebaseAuth } from './firebase-client';
 
 export type PaymentMethod = 'cash' | 'transfer' | 'card';
 export type ExportKind = 'sales' | 'stock' | 'movements';
+export type Segment = 'car' | 'truck' | 'moto' | 'deep';
+export type Tech = 'SMF' | 'EFB' | 'AGM' | 'DEEP-CYCLE';
+export type StockState = 'in' | 'order' | 'out';
 
 export interface AdminBattery {
   id: string;
   name: string;
   brand: string;
-  tech: string;
+  segment: Segment;
+  tech: Tech;
   ah: number;
   cca: number;
   polarity: string;
   caseCode: string;
+  dimsMm: { l: number; w: number; h: number };
+  terminal?: string;
+  holdDown?: string;
   warrantyMonths: number;
   price: number | null;
   costPrice?: number | null;
-  stock: 'in' | 'order' | 'out';
+  stock: StockState;
   quantity?: number;
   oemCodes: string[];
   active: boolean;
@@ -133,6 +140,49 @@ async function postJson<T>(path: string, body: unknown, getToken?: TokenGetter):
   ).json()) as T;
 }
 
+async function patchJson<T>(path: string, body: unknown, getToken?: TokenGetter): Promise<T> {
+  return (await (
+    await adminFetch(path, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, getToken)
+  ).json()) as T;
+}
+
+async function deleteJson<T>(path: string, getToken?: TokenGetter): Promise<T> {
+  return (await (await adminFetch(path, { method: 'DELETE' }, getToken)).json()) as T;
+}
+
+export interface NewProductInput {
+  brand?: string;
+  name: string;
+  segment: Segment;
+  tech: Tech;
+  ah: number;
+  cca: number;
+  polarity: 'L+' | 'R+';
+  caseCode: string;
+  dimsMm: { l: number; w: number; h: number };
+  warrantyMonths: number;
+  price: number | null;
+  costPrice?: number | null;
+  stock?: StockState;
+  oemCodes?: string[];
+  active?: boolean;
+  quantity?: number;
+}
+
+export type ProductPatch = Partial<Omit<NewProductInput, 'quantity'>>;
+
+export function createProduct(body: NewProductInput, getToken?: TokenGetter): Promise<{ battery: AdminBattery }> {
+  return postJson('/api/admin/batteries', body, getToken);
+}
+
+export function patchProduct(id: string, body: ProductPatch, getToken?: TokenGetter): Promise<{ battery: AdminBattery }> {
+  return patchJson(`/api/admin/batteries/${encodeURIComponent(id)}`, body, getToken);
+}
+
+export function deleteProduct(id: string, getToken?: TokenGetter): Promise<{ removedFromFitments: number }> {
+  return deleteJson(`/api/admin/batteries/${encodeURIComponent(id)}`, getToken);
+}
+
 export function listBatteries(getToken?: TokenGetter): Promise<{ batteries: AdminBattery[] }> {
   return getJson('/api/admin/batteries', getToken);
 }
@@ -203,4 +253,107 @@ export function calcSaleTotal(lines: { qty: number; unitPrice: number }[], disco
 
 export function specLine(b: Pick<AdminBattery, 'polarity' | 'caseCode' | 'ah' | 'cca'>): string {
   return `${b.polarity}, ${b.caseCode}, ${b.ah}Ah, ${b.cca}A`;
+}
+
+export interface ProductFormValues {
+  brand: string;
+  name: string;
+  segment: Segment;
+  tech: Tech;
+  ah: string;
+  cca: string;
+  polarity: 'L+' | 'R+' | '';
+  caseCode: string;
+  dimL: string;
+  dimW: string;
+  dimH: string;
+  warrantyMonths: string;
+  price: string;
+  costPrice: string;
+  quantity: string;
+  oemCodes: string;
+}
+
+export type ProductFormError =
+  | 'brand'
+  | 'name'
+  | 'ah'
+  | 'cca'
+  | 'polarity'
+  | 'caseCode'
+  | 'dims'
+  | 'warranty'
+  | 'price'
+  | 'costPrice'
+  | 'quantity';
+
+const positive = (s: string) => s.trim() !== '' && Number.isFinite(Number(s)) && Number(s) > 0;
+
+export function validateProductForm(v: ProductFormValues, opts: { quantity: boolean }): ProductFormError[] {
+  const errors: ProductFormError[] = [];
+  if (!v.brand.trim()) errors.push('brand');
+  if (!v.name.trim()) errors.push('name');
+  if (!positive(v.ah)) errors.push('ah');
+  if (!positive(v.cca)) errors.push('cca');
+  if (v.polarity !== 'L+' && v.polarity !== 'R+') errors.push('polarity');
+  if (!/^[A-Z0-9-]{1,20}$/.test(v.caseCode.trim().toUpperCase())) errors.push('caseCode');
+  if (!positive(v.dimL) || !positive(v.dimW) || !positive(v.dimH)) errors.push('dims');
+  if (v.warrantyMonths.trim() === '' || !Number.isInteger(Number(v.warrantyMonths)) || Number(v.warrantyMonths) < 0) {
+    errors.push('warranty');
+  }
+  if (v.price.trim() !== '' && (!Number.isFinite(Number(v.price)) || Number(v.price) < 0)) errors.push('price');
+  if (v.costPrice.trim() !== '' && (!Number.isFinite(Number(v.costPrice)) || Number(v.costPrice) < 0)) errors.push('costPrice');
+  if (opts.quantity && (v.quantity.trim() === '' || !Number.isInteger(Number(v.quantity)) || Number(v.quantity) < 0)) {
+    errors.push('quantity');
+  }
+  return errors;
+}
+
+export function parseOemCodes(text: string): string[] {
+  return text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l !== '');
+}
+
+export function formToNewProduct(v: ProductFormValues): NewProductInput {
+  return {
+    ...(v.brand.trim() ? { brand: v.brand.trim() } : {}),
+    name: v.name.trim(),
+    segment: v.segment,
+    tech: v.tech,
+    ah: Number(v.ah),
+    cca: Number(v.cca),
+    polarity: v.polarity as 'L+' | 'R+',
+    caseCode: v.caseCode.trim().toUpperCase(),
+    dimsMm: { l: Number(v.dimL), w: Number(v.dimW), h: Number(v.dimH) },
+    warrantyMonths: Number(v.warrantyMonths),
+    price: v.price.trim() === '' ? null : Number(v.price),
+    ...(v.costPrice.trim() === '' ? {} : { costPrice: Number(v.costPrice) }),
+    oemCodes: parseOemCodes(v.oemCodes),
+    ...(v.quantity.trim() === '' ? {} : { quantity: Number(v.quantity) }),
+  };
+}
+
+const sameCodes = (a: string[], b: string[]) => a.length === b.length && a.every((c, i) => c === b[i]);
+
+export function changedFields(current: AdminBattery, v: ProductFormValues): ProductPatch {
+  const next = formToNewProduct(v);
+  const patch: ProductPatch = {};
+  if (next.brand !== undefined && next.brand !== current.brand) patch.brand = next.brand;
+  if (next.name !== current.name) patch.name = next.name;
+  if (next.segment !== current.segment) patch.segment = next.segment;
+  if (next.tech !== current.tech) patch.tech = next.tech;
+  if (next.ah !== current.ah) patch.ah = next.ah;
+  if (next.cca !== current.cca) patch.cca = next.cca;
+  if (next.polarity !== current.polarity) patch.polarity = next.polarity;
+  if (next.caseCode !== current.caseCode) patch.caseCode = next.caseCode;
+  if (next.dimsMm.l !== current.dimsMm.l || next.dimsMm.w !== current.dimsMm.w || next.dimsMm.h !== current.dimsMm.h) {
+    patch.dimsMm = next.dimsMm;
+  }
+  if (next.warrantyMonths !== current.warrantyMonths) patch.warrantyMonths = next.warrantyMonths;
+  if (next.price !== current.price) patch.price = next.price;
+  if ((next.costPrice ?? null) !== (current.costPrice ?? null)) patch.costPrice = next.costPrice ?? null;
+  if (!sameCodes(next.oemCodes ?? [], current.oemCodes)) patch.oemCodes = next.oemCodes;
+  return patch;
 }

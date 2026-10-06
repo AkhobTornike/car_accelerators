@@ -3,15 +3,24 @@ import {
   AdminApiError,
   adjustStock,
   calcSaleTotal,
+  changedFields,
+  createProduct,
   createSale,
+  deleteProduct,
   detectIdDocument,
   downloadExport,
   formatMoney,
+  formToNewProduct,
   listBatteries,
   listSales,
   parseDisposition,
+  parseOemCodes,
+  patchProduct,
   receiveStock,
+  validateProductForm,
   voidSale,
+  type AdminBattery,
+  type ProductFormValues,
 } from './admin-api';
 
 const token = async () => 'test-token';
@@ -135,8 +144,7 @@ describe('export download', () => {
 });
 
 describe('pure helpers', () => {
-  it('detectIdDocument', () => {
-    expect(detectIdDocument('ge12 ab3456789012345678')).toEqual({ kind: 'iban', value: 'GE12AB3456789012345678' });
+  it('detectIdDocument', () => {    expect(detectIdDocument('ge12 ab3456789012345678')).toEqual({ kind: 'iban', value: 'GE12AB3456789012345678' });
     expect(detectIdDocument('123456789')).toEqual({ kind: 'idNumber', value: '123456789' });
     expect(detectIdDocument('12345678901')).toEqual({ kind: 'idNumber', value: '12345678901' });
     expect(detectIdDocument('12345').kind).toBe('none');
@@ -150,5 +158,151 @@ describe('pure helpers', () => {
   it('calcSaleTotal', () => {
     expect(calcSaleTotal([{ qty: 2, unitPrice: 100 }, { qty: 1, unitPrice: 50 }], 10)).toBe(240);
     expect(calcSaleTotal([], 0)).toBe(0);
+  });
+});
+
+const productForm = (o: Partial<ProductFormValues> = {}): ProductFormValues => ({
+  brand: 'AMPER',
+  name: 'S60',
+  segment: 'car',
+  tech: 'SMF',
+  ah: '60',
+  cca: '540',
+  polarity: 'R+',
+  caseCode: 'L2',
+  dimL: '242',
+  dimW: '175',
+  dimH: '190',
+  warrantyMonths: '24',
+  price: '200',
+  costPrice: '',
+  quantity: '0',
+  oemCodes: ' 560 409 054\n\n0 092 S50 080\n',
+  ...o,
+});
+
+const storedBattery = (o: Partial<AdminBattery> = {}): AdminBattery => ({
+  id: 's60',
+  brand: 'AMPER',
+  name: 'S60',
+  segment: 'car',
+  tech: 'SMF',
+  ah: 60,
+  cca: 540,
+  polarity: 'R+',
+  caseCode: 'L2',
+  dimsMm: { l: 242, w: 175, h: 190 },
+  warrantyMonths: 24,
+  price: 200,
+  stock: 'in',
+  quantity: 5,
+  oemCodes: ['560 409 054', '0 092 S50 080'],
+  active: true,
+  ...o,
+});
+
+describe('product endpoints', () => {
+  it('createProduct posts to /api/admin/batteries and parses 201', async () => {
+    const seen: { url: string; method?: string; body: string }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        seen.push({ url, method: init?.method, body: String(init?.body) });
+        return { ok: true, status: 201, headers: new Headers(), json: async () => ({ battery: { id: 's60' } }) } as Response;
+      }),
+    );
+    const { battery } = await createProduct(
+      { name: 'S60', segment: 'car', tech: 'SMF', ah: 60, cca: 540, polarity: 'R+', caseCode: 'L2', dimsMm: { l: 242, w: 175, h: 190 }, warrantyMonths: 24, price: 200 },
+      token,
+    );
+    expect(seen).toHaveLength(1);
+    expect(seen[0].url).toBe('/api/admin/batteries');
+    expect(seen[0].method).toBe('POST');
+    expect(battery.id).toBe('s60');
+  });
+  it('patchProduct PATCHes /api/admin/batteries/<id> with only the given fields', async () => {
+    const seen: { url: string; method?: string; body: string }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        seen.push({ url, method: init?.method, body: String(init?.body) });
+        return ok({ battery: { id: 's 60' } });
+      }),
+    );
+    await patchProduct('s 60', { price: 210 }, token);
+    expect(seen[0].url).toBe('/api/admin/batteries/s%2060');
+    expect(seen[0].method).toBe('PATCH');
+    expect(JSON.parse(seen[0].body)).toEqual({ price: 210 });
+  });
+  it('deleteProduct DELETEs and parses removedFromFitments', async () => {
+    const seen: { url: string; method?: string }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        seen.push({ url, method: init?.method });
+        return ok({ removedFromFitments: 3 });
+      }),
+    );
+    await expect(deleteProduct('s60', token)).resolves.toEqual({ removedFromFitments: 3 });
+    expect(seen[0]).toEqual({ url: '/api/admin/batteries/s60', method: 'DELETE' });
+  });
+  it('400 carries details, 409 conflict and has_history are distinguishable, 404 keeps its code', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => fail(400, { error: 'invalid_input', details: ['name: bad'] })));
+    const bad = (await createProduct({} as never, token).catch((e) => e)) as AdminApiError;
+    expect(bad.kind).toBe('invalid');
+    expect(bad.details).toEqual(['name: bad']);
+    vi.stubGlobal('fetch', vi.fn(async () => fail(409, { error: 'conflict', details: [] })));
+    const conflict = (await createProduct({} as never, token).catch((e) => e)) as AdminApiError;
+    expect(conflict.code).toBe('conflict');
+    vi.stubGlobal('fetch', vi.fn(async () => fail(409, { error: 'has_history', details: [] })));
+    const history = (await deleteProduct('s60', token).catch((e) => e)) as AdminApiError;
+    expect(history.code).toBe('has_history');
+    expect(history.code).not.toBe(conflict.code);
+    vi.stubGlobal('fetch', vi.fn(async () => fail(404, { error: 'not_found', details: [] })));
+    const missing = (await deleteProduct('nope', token).catch((e) => e)) as AdminApiError;
+    expect(missing.status).toBe(404);
+    expect(missing.code).toBe('not_found');
+  });
+});
+
+describe('product form helpers', () => {
+  it('formToNewProduct maps dims, empty price to null, OEM textarea to an array', () => {
+    expect(formToNewProduct(productForm({ brand: '  ', price: '', costPrice: '150', caseCode: 'l2', quantity: '' }))).toEqual({
+      name: 'S60',
+      segment: 'car',
+      tech: 'SMF',
+      ah: 60,
+      cca: 540,
+      polarity: 'R+',
+      caseCode: 'L2',
+      dimsMm: { l: 242, w: 175, h: 190 },
+      warrantyMonths: 24,
+      price: null,
+      costPrice: 150,
+      oemCodes: ['560 409 054', '0 092 S50 080'],
+    });
+  });
+  it('parseOemCodes trims and drops empty lines', () => {
+    expect(parseOemCodes(' a \n\nb\n ')).toEqual(['a', 'b']);
+    expect(parseOemCodes('')).toEqual([]);
+  });
+  it('changedFields sends only what changed', () => {
+    expect(changedFields(storedBattery(), productForm({ quantity: '99' }))).toEqual({});
+    expect(changedFields(storedBattery(), productForm({ price: '210', name: 'S60+' }))).toEqual({ price: 210, name: 'S60+' });
+    expect(changedFields(storedBattery(), productForm({ costPrice: '' }))).toEqual({});
+    expect(changedFields(storedBattery({ costPrice: null }), productForm({ costPrice: '' }))).toEqual({});
+    expect(changedFields(storedBattery(), productForm({ costPrice: '100' }))).toEqual({ costPrice: 100 });
+    expect(changedFields(storedBattery(), productForm({ oemCodes: '560 409 054\n0 092 S50 080' }))).toEqual({});
+  });
+  it('validateProductForm flags each broken rule and passes a good form', () => {
+    expect(validateProductForm(productForm(), { quantity: true })).toEqual([]);
+    expect(validateProductForm(productForm({ name: '  ' }), { quantity: true })).toEqual(['name']);
+    expect(validateProductForm(productForm({ ah: '-5' }), { quantity: true })).toEqual(['ah']);
+    expect(validateProductForm(productForm({ polarity: '' }), { quantity: true })).toEqual(['polarity']);
+    expect(validateProductForm(productForm({ caseCode: 'L 2!' }), { quantity: true })).toEqual(['caseCode']);
+    expect(validateProductForm(productForm({ dimH: '0' }), { quantity: true })).toEqual(['dims']);
+    expect(validateProductForm(productForm({ price: 'abc' }), { quantity: true })).toEqual(['price']);
+    expect(validateProductForm(productForm({ quantity: '2.5' }), { quantity: true })).toEqual(['quantity']);
+    expect(validateProductForm(productForm({ quantity: '2.5' }), { quantity: false })).toEqual([]);
   });
 });
