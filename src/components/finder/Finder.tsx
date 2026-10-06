@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { content } from '@/components/site/content';
 import CodePane from './CodePane';
+import NotSurePane from './NotSurePane';
 import VehiclePane from './VehiclePane';
 
 const METHODS = [
   { id: 'vehicle', label: 'By vehicle', icon: 'i-car' },
   { id: 'code', label: 'By battery code', icon: 'i-search' },
+  { id: 'notsure', label: content.finder.notSure.tab, icon: 'i-cam' },
 ] as const;
 
 type Method = (typeof METHODS)[number]['id'];
@@ -35,6 +38,14 @@ function Icons() {
         <symbol id="i-info" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="8.4" />
           <path d="M12 11.2v4.9M12 7.7v.2" />
+        </symbol>
+        <symbol id="i-cam" viewBox="0 0 24 24">
+          <rect x="3.4" y="3.4" width="17.2" height="17.2" rx="3.4" />
+          <circle cx="12" cy="12" r="3.7" />
+          <circle cx="17.1" cy="6.9" r="1" fill="currentColor" stroke="none" />
+        </symbol>
+        <symbol id="i-send" viewBox="0 0 24 24">
+          <path d="M20.6 3.4 10.8 13.2M20.6 3.4 14.1 20.6l-3.3-7.4-7.4-3.3z" />
         </symbol>
       </defs>
     </svg>
@@ -81,6 +92,9 @@ export default function Finder() {
         </div>
         <div role="tabpanel" id="pane-code" aria-labelledby="tab-code" hidden={method !== 'code'}>
           {method === 'code' && <CodePane />}
+        </div>
+        <div role="tabpanel" id="pane-notsure" aria-labelledby="tab-notsure" hidden={method !== 'notsure'}>
+          {method === 'notsure' && <NotSurePane />}
         </div>
       </div>
     </div>
