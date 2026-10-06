@@ -95,6 +95,28 @@ describe('sales', () => {
     expect(sale).not.toHaveProperty('note');
     expect((await cat.getBattery('s60'))!.quantity).toBe(3);
   });
+  it('a quick sale is a sale without customer: 201, stock lowered, total = qty x price, payment defaults to cash', async () => {
+    const res = await postSale(req('/api/admin/sales', { method: 'POST', body: { lines: [{ batteryId: 's60', qty: 2, unitPrice: 190 }] } }));
+    expect(res.status).toBe(201);
+    const { sale } = await res.json();
+    expect(sale).toMatchObject({ total: 380, discount: 0, paymentMethod: 'cash' });
+    expect(sale).not.toHaveProperty('customer');
+    expect((await cat.getBattery('s60'))!.quantity).toBe(3);
+    // a half-filled customer is still rejected: either no customer at all, or a complete one
+    const bad = await postSale(req('/api/admin/sales', { method: 'POST', body: { customer: { firstName: 'A', lastName: 'B' }, lines: [{ batteryId: 's60', qty: 1, unitPrice: 1 }] } }));
+    expect(bad.status).toBe(422);
+  });
+  it('quick sales appear in the list and in the CSV with an empty customer and sale_type quick', async () => {
+    await postSale(req('/api/admin/sales', { method: 'POST', body: { lines: [{ batteryId: 's60', qty: 1, unitPrice: 200 }] } }));
+    await postSale(req('/api/admin/sales', { method: 'POST', body: saleBody() }));
+    const list = (await (await listSales(req('/api/admin/sales'))).json()).sales;
+    expect(list).toHaveLength(2);
+    const csv = await (await exportCsv(req('/api/admin/export/sales'), ctx({ kind: 'sales' }))).text();
+    const rows = csv.split('\r\n').filter(Boolean);
+    expect(rows[0]).toContain('status,sale_type,first_name');
+    expect(rows.some((r) => /,completed,quick,,,,,,s60,/.test(r))).toBe(true);
+    expect(rows.some((r) => /,completed,customer,Nino,Beridze,/.test(r))).toBe(true);
+  });
   it('rejects bad input with 400 naming fields but never echoing values', async () => {
     const res = await postSale(req('/api/admin/sales', { method: 'POST', body: saleBody({ customer: { firstName: 'Nino', lastName: 'Beridze', idNumber: '12345SECRET' } }) }));
     expect(res.status).toBe(400);
@@ -110,7 +132,6 @@ describe('sales', () => {
     ['no lines', saleBody({ lines: [] })],
     ['bad payment', saleBody({ paymentMethod: 'bitcoin' })],
     ['bad date', saleBody({ soldAt: 'yesterday' })],
-    ['unknown extra field is ignored but missing customer is not', { lines: saleBody().lines, paymentMethod: 'cash' }],
   ])('400 for %s', async (_n, body) => {
     expect((await postSale(req('/api/admin/sales', { method: 'POST', body }))).status).toBe(400);
   });
@@ -262,7 +283,7 @@ describe('CSV export', () => {
     const bytes = new Uint8Array(await res.arrayBuffer());
     expect([...bytes.slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]); // UTF-8 BOM on the wire; res.text() would strip it
     const text = new TextDecoder().decode(bytes);
-    expect(text).toContain('sale_id,date,status,first_name');
+    expect(text).toContain('sale_id,date,status,sale_type,first_name');
     expect(text).toContain('Nino,Beridze,01001012345');
   });
   it('exports the stock sheet with cost and the movements', async () => {

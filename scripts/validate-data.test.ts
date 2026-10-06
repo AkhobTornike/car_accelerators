@@ -156,6 +156,14 @@ describe('inventory checks', () => {
     const okExtra = { sales: [sale()], voids: [], movements: moves };
     expect(validateData([bat({ id: 'b1', quantity: 8 })], [fit({ include: ['b1'] })], okExtra)).toEqual([]);
   });
+  it('a quick sale (no customer) is valid; a customer without ID or IBAN is still a schema error', () => {
+    const { customer: _c, ...quick } = sale();
+    void _c;
+    const moves = [mov({ delta: 10 }), mov({ id: 'm2', delta: -2, kind: 'sale', saleId: 's1' })];
+    expect(validateData([bat({ id: 'b1', quantity: 8 })], [fit({ include: ['b1'] })], { sales: [quick], voids: [], movements: moves })).toEqual([]);
+    const half = sale({ customer: { firstName: 'A', lastName: 'B' } });
+    expect(codes(validateData([bat({ id: 'b1', quantity: 8 })], [fit({ include: ['b1'] })], { sales: [half], voids: [], movements: moves }))).toContain('schema');
+  });
   it('sale-total-mismatch follows core/inventory.ts saleTotal', () => {
     const lines = [{ batteryId: 'b1', name: 'b1', qty: 3, unitPrice: 99.99 }];
     const atCore = validateData([bat({ id: 'b1' })], [fit()], { sales: [sale({ lines, total: coreSaleTotal(lines, 10) })], voids: [], movements: [] });

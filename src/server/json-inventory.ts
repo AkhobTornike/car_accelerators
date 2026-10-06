@@ -42,7 +42,7 @@ export function createJsonInventory(store: JsonStore): InventoryRepository {
     recordSale(input) {
       return store.withLock(async () => {
         const batteries = await read.batteries();
-        const errors = [...checkCustomer(input.customer), ...checkSale(input, batteries)];
+        const errors = [...(input.customer ? checkCustomer(input.customer) : []), ...checkSale(input, batteries)];
         if (errors.length) throw new InventoryError('invalid_sale', errors);
 
         // Name and cost are snapshots taken from the catalogue, never trusted from the client.
@@ -53,7 +53,7 @@ export function createJsonInventory(store: JsonStore): InventoryRepository {
         const soldAt = input.soldAt ?? new Date().toISOString();
         const sale: Sale = {
           id: `s-${soldAt.slice(0, 10).replaceAll('-', '')}-${randomBytes(3).toString('hex')}`,
-          soldAt, customer: input.customer, lines, discount: input.discount,
+          soldAt, ...(input.customer ? { customer: input.customer } : {}), lines, discount: input.discount,
           total: saleTotal(lines, input.discount), paymentMethod: input.paymentMethod,
           ...(cleanNote(input.note) ? { note: cleanNote(input.note) } : {}),
         };

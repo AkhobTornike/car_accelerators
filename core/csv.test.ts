@@ -33,9 +33,16 @@ describe('salesToCsv', () => {
   it('writes one row per line, sale-level amounts only on the first line', () => {
     const r = rows(salesToCsv([sale], []));
     expect(r).toHaveLength(3);
-    expect(r[1]).toContain('s1,2026-10-03T10:00:00.000Z,completed,Nino,Beridze,,GE29NB0000000101904917');
+    expect(r[1]).toContain('s1,2026-10-03T10:00:00.000Z,completed,customer,Nino,Beridze,,GE29NB0000000101904917');
     expect(r[1]).toMatch(/,2,215,430,30,715,transfer/);
     expect(r[2]).toMatch(/,1,315,315,,,transfer/);
+  });
+  it('a quick sale (no customer) exports with sale_type quick and empty customer cells', () => {
+    const { customer: _c, ...quick } = sale;
+    void _c;
+    const r = rows(salesToCsv([{ ...quick, id: 'q1' }], []));
+    expect(r[1]).toMatch(/^q1,2026-10-03T10:00:00\.000Z,completed,quick,,,,,,a,AMPER S60,2,215,430,30,715,transfer/);
+    expect(r[2]).toMatch(/^q1,.*,completed,quick,,,,,,b,AMPER E70,1,315,315,,,transfer/);
   });
   it('keeps voided sales, marked with the reason', () => {
     const r = rows(salesToCsv([sale], [{ id: 'v', saleId: 's1', at: '2026-10-04T00:00:00.000Z', reason: 'returned' }]));

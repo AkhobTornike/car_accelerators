@@ -57,6 +57,7 @@ export const labels = {
     voided: 'გაუქმებული',
     active: 'აქტიური',
     voidReasonShown: 'მიზეზი',
+    quickSale: 'სწრაფი გაყიდვა',
   },
   stock: {
     name: 'სახელი',

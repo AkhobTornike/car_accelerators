@@ -199,7 +199,7 @@ export function createFirestoreRepositories(db: Firestore, options: FirestoreOpt
     async recordSale(input) {
       const sale = await db.runTransaction(async (tx) => {
         const current = await readBatteries(tx, input.lines.map((l) => l.batteryId));
-        const errors = [...checkCustomer(input.customer), ...checkSale(input, current)];
+        const errors = [...(input.customer ? checkCustomer(input.customer) : []), ...checkSale(input, current)];
         if (errors.length) throw new InventoryError('invalid_sale', errors);
 
         const lines = input.lines.map((l) => {
@@ -209,7 +209,7 @@ export function createFirestoreRepositories(db: Firestore, options: FirestoreOpt
         const soldAt = input.soldAt ?? new Date().toISOString();
         const s: Sale = {
           id: `s-${soldAt.slice(0, 10).replaceAll('-', '')}-${randomBytes(3).toString('hex')}`,
-          soldAt, customer: input.customer, lines, discount: input.discount,
+          soldAt, ...(input.customer ? { customer: input.customer } : {}), lines, discount: input.discount,
           total: saleTotal(lines, input.discount), paymentMethod: input.paymentMethod,
           ...(cleanNote(input.note) ? { note: cleanNote(input.note) } : {}),
         };

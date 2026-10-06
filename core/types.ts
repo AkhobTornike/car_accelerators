@@ -101,7 +101,7 @@ export interface SaleLine {
 export interface Sale {
   id: string;
   soldAt: string;                   // ISO 8601
-  customer: Customer;
+  customer?: Customer;              // absent for a quick sale: nothing is asked of the buyer, only stock and money move
   lines: SaleLine[];
   discount: number;                 // GEL, total discount on the whole sale (>= 0)
   total: number;                    // sum(qty * unitPrice) - discount

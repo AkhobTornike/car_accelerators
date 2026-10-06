@@ -13,10 +13,10 @@ export const newSaleBody = z.object({
     idNumber: z.preprocess(blankToUndefined, z.string().trim().regex(/^(\d{9}|\d{11})$/).optional()),
     iban: z.preprocess((v) => { const b = blankToUndefined(v); return typeof b === 'string' ? b.replace(/\s+/g, '').toUpperCase() : b; }, z.string().regex(/^GE\d{2}[A-Z]{2}\d{16}$/).optional()),
     phone: optionalText(30),
-  }),
+  }).optional(), // omitted = quick sale (no customer data)
   lines: z.array(z.object({ batteryId, qty: z.number().int().min(1).max(1000), unitPrice: money })).min(1).max(50),
   discount: money.default(0),
-  paymentMethod: z.enum(['cash', 'transfer', 'card']),
+  paymentMethod: z.enum(['cash', 'transfer', 'card']).default('cash'),
   note: optionalText(500),
   soldAt: z.preprocess(blankToUndefined, z.iso.datetime().optional()),
 }).transform((b): NewSale => ({
