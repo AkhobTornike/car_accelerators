@@ -149,7 +149,7 @@ export default function NewSale({ onSignOut }: { onSignOut: () => void }) {
           {t.total}: <b>{formatMoney(done.total)}</b>
         </p>
         <p>
-          {done.customer.firstName} {done.customer.lastName} · {done.lines.map((l) => `${l.qty} × ${l.name}`).join(', ')}
+          {done.customer ? `${done.customer.firstName} ${done.customer.lastName}` : labels.sales.quickSale} · {done.lines.map((l) => `${l.qty} × ${l.name}`).join(', ')}
         </p>
         <button className="btn btn-solid" type="button" onClick={startAgain}>
           {t.again}

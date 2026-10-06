@@ -47,7 +47,7 @@ export interface SaleLine {
 export interface Sale {
   id: string;
   soldAt: string;
-  customer: SaleCustomer;
+  customer?: SaleCustomer; // absent for a quick sale
   lines: SaleLine[];
   discount: number;
   total: number;
@@ -63,7 +63,7 @@ export interface SaleVoid {
 }
 
 export interface NewSaleInput {
-  customer: SaleCustomer;
+  customer?: SaleCustomer; // omit for a quick sale
   lines: { batteryId: string; qty: number; unitPrice: number }[];
   discount: number;
   paymentMethod: PaymentMethod;

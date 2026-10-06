@@ -142,6 +142,19 @@ export function repositoryContract(name: string, make: () => Promise<Backend>) {
         expect(m).toHaveLength(1);
         expect(m[0]).toMatchObject({ delta: -2, kind: 'sale', saleId: s.id });
       });
+      it('a quick sale needs no customer: stock and ledger move, the sale has no customer, an invalid customer is still refused', async () => {
+        const q = await inv.recordSale({ discount: 0, paymentMethod: 'cash', lines: [one('s60', 3, 200)] });
+        expect(q.customer).toBeUndefined();
+        expect(q).toMatchObject({ total: 600, paymentMethod: 'cash' });
+        expect((await cat.getBattery('s60'))!.quantity).toBe(2);
+        expect((await inv.listMovements({ batteryId: 's60' }))[0]).toMatchObject({ kind: 'sale', delta: -3, saleId: q.id });
+        expect((await inv.listSales()).sales[0]).not.toHaveProperty('customer');
+        expect((await failure(inv.recordSale({ ...sale(), customer: { firstName: 'A', lastName: 'B' } }))).code).toBe('invalid_sale');
+        expect((await failure(inv.recordSale({ discount: 0, paymentMethod: 'cash', lines: [one('s60', 3)] }))).code).toBe('invalid_sale'); // only 2 left
+        const v = await inv.voidSale(q.id, 'wrong'); // voiding works the same
+        expect(v.saleId).toBe(q.id);
+        expect((await cat.getBattery('s60'))!.quantity).toBe(5);
+      });
       it('selling the last unit marks the battery out', async () => {
         await inv.recordSale(sale({ lines: [one('e70', 1, 300)] }));
         expect(await cat.getBattery('e70')).toMatchObject({ quantity: 0, stock: 'out' });

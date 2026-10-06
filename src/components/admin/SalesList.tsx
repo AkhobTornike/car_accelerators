@@ -94,7 +94,7 @@ export default function SalesList({ onSignOut }: { onSignOut: () => void }) {
           return (
             <li key={s.id} className={v ? 'voided' : undefined} aria-live="polite">
               <div className="admin-card-head">
-                <b>{s.customer.firstName} {s.customer.lastName}</b>
+                <b>{s.customer ? `${s.customer.firstName} ${s.customer.lastName}` : t.quickSale}</b>
                 <span className="mono">{formatMoney(s.total)}</span>
               </div>
               <p className="admin-small">
