@@ -7,6 +7,7 @@ export function toPublicBattery(b: Battery) {
     id: b.id, name: b.name, brand: b.brand, segment: b.segment, tech: b.tech, ah: b.ah, cca: b.cca, polarity: b.polarity,
     caseCode: b.caseCode, dimsMm: b.dimsMm, warrantyMonths: b.warrantyMonths, price: b.price, stock: b.stock,
     ...(b.quantity === undefined ? {} : { quantity: b.quantity }),
+    images: b.images ?? [],
   };
 }
 
