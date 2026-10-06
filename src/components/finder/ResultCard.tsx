@@ -1,6 +1,7 @@
 'use client';
 
 import type { Note, PublicBattery, Tier } from '@/lib/api-client';
+import { telLink, waLink } from '@/lib/site/contact';
 
 export interface MatchInfo {
   tier: Tier;
@@ -14,13 +15,6 @@ export interface ResultItem {
   vehicle: string;
 }
 
-const WA_NUM = '995555123456';
-const TEL_NUM = '+995322550011';
-
-export function waLink(text: string): string {
-  return `https://wa.me/${WA_NUM}?text=${encodeURIComponent(text)}`;
-}
-
 function waText(name: string, ah: number, cca: number, vehicle: string): string {
   return (
     `Hello, I am interested in ${name} (${ah}Ah ${cca}A). My vehicle is: ${vehicle}. ` +
@@ -28,7 +22,7 @@ function waText(name: string, ah: number, cca: number, vehicle: string): string 
   );
 }
 
-function stockLine(b: PublicBattery): { text: string; ok: boolean } {
+export function stockLine(b: PublicBattery): { text: string; ok: boolean } {
   if (b.stock === 'order') return { text: 'Order only', ok: false };
   if (b.quantity !== undefined) {
     if (b.quantity <= 0) return { text: 'Out of stock', ok: false };
@@ -85,7 +79,7 @@ export default function ResultCard({ item }: { item: ResultItem }) {
           </svg>
           Ask
         </a>
-        <a className="btn btn-sm btn-line" href={`tel:${TEL_NUM}`}>
+        <a className="btn btn-sm btn-line" href={telLink()}>
           <svg className="ic" style={{ width: 14, height: 14 }} aria-hidden="true">
             <use href="#i-phone" />
           </svg>

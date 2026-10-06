@@ -1,6 +1,7 @@
 'use client';
 
-import ResultCard, { waLink, type ResultItem } from './ResultCard';
+import { waLink } from '@/lib/site/contact';
+import ResultCard, { type ResultItem } from './ResultCard';
 
 interface Props {
   status: 'idle' | 'loading' | 'error' | 'ready';
