@@ -2,16 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { getEngines, getMakes, getMatches, getModels, type EngineOption, type VehicleType } from '@/lib/api-client';
+import type { SiteContent } from '@/components/site/content';
 import Results from './Results';
 import type { ResultItem } from './ResultCard';
 
 const TYPES: VehicleType[] = ['car', 'van', 'truck', 'moto'];
-const TYPE_LABEL: Record<VehicleType, string> = {
-  car: 'Car / SUV',
-  van: 'Van / commercial',
-  truck: 'Truck / bus',
-  moto: 'Motorcycle',
-};
 
 function yearOptions(): number[] {
   const out: number[] = [];
@@ -21,7 +16,8 @@ function yearOptions(): number[] {
 
 const YEARS = yearOptions();
 
-export default function VehiclePane() {
+export default function VehiclePane({ t }: { t: SiteContent['finder'] }) {
+  const v = t.vehicle;
   const [types, setTypes] = useState<VehicleType[] | null>(null);
   const [typesFailed, setTypesFailed] = useState(false);
   const [vType, setVType] = useState<VehicleType>('car');
@@ -185,35 +181,35 @@ export default function VehiclePane() {
   if (typesFailed) {
     return (
       <div className="empty" role="alert">
-        <b>Something went wrong, please try again.</b>{' '}
+        <b>{t.results.error}</b>{' '}
         <button className="btn btn-sm btn-line" type="button" onClick={() => window.location.reload()}>
-          Retry
+          {t.results.retry}
         </button>
       </div>
     );
   }
-  if (types === null) return <p className="find-hint">Loading…</p>;
+  if (types === null) return <p className="find-hint">{t.results.loading}</p>;
 
   return (
     <div>
-      <div className="tabs subtabs" role="tablist" aria-label="Vehicle type" onKeyDown={onTabKey}>
-        {types.map((t) => (
+      <div className="tabs subtabs" role="tablist" aria-label={v.typeLabel} onKeyDown={onTabKey}>
+        {types.map((type) => (
           <button
-            key={t}
+            key={type}
             className="tab"
             role="tab"
             type="button"
-            aria-selected={t === vType}
-            tabIndex={t === vType ? 0 : -1}
-            onClick={() => void pickType(t)}
+            aria-selected={type === vType}
+            tabIndex={type === vType ? 0 : -1}
+            onClick={() => void pickType(type)}
           >
-            {TYPE_LABEL[t]}
+            {v.types[type]}
           </button>
         ))}
       </div>
       <div className="fields">
         <div className="field">
-          <label htmlFor="f-year">Year</label>
+          <label htmlFor="f-year">{v.year}</label>
           <select
             id="f-year"
             value={year}
@@ -222,7 +218,7 @@ export default function VehiclePane() {
               if (make && model) void loadEngines(vType, make, model, e.target.value);
             }}
           >
-            <option value="">Year…</option>
+            <option value="">{v.yearPlaceholder}</option>
             {YEARS.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -231,9 +227,9 @@ export default function VehiclePane() {
           </select>
         </div>
         <div className="field">
-          <label htmlFor="f-make">Make</label>
+          <label htmlFor="f-make">{v.make}</label>
           <select id="f-make" value={make} onChange={(e) => void pickMake(vType, e.target.value)}>
-            <option value="">{loading === 'makes' ? 'Loading…' : 'Make…'}</option>
+            <option value="">{loading === 'makes' ? v.loading : v.makePlaceholder}</option>
             {makes.map((m) => (
               <option key={m} value={m}>
                 {m}
@@ -242,7 +238,7 @@ export default function VehiclePane() {
           </select>
         </div>
         <div className="field">
-          <label htmlFor="f-model">Model</label>
+          <label htmlFor="f-model">{v.model}</label>
           <select
             id="f-model"
             value={model}
@@ -252,7 +248,7 @@ export default function VehiclePane() {
               void loadEngines(vType, make, e.target.value, year);
             }}
           >
-            <option value="">{loading === 'models' ? 'Loading…' : '—'}</option>
+            <option value="">{loading === 'models' ? v.loading : v.emptyOption}</option>
             {models.map((m) => (
               <option key={m} value={m}>
                 {m}
@@ -261,7 +257,7 @@ export default function VehiclePane() {
           </select>
         </div>
         <div className="field">
-          <label htmlFor="f-eng">Engine / fuel</label>
+          <label htmlFor="f-eng">{v.engine}</label>
           <select
             id="f-eng"
             value={engine}
@@ -272,7 +268,7 @@ export default function VehiclePane() {
               if (found) void showMatches(found.fitmentId, found.label);
             }}
           >
-            <option value="">{loading === 'engines' ? 'Loading…' : '—'}</option>
+            <option value="">{loading === 'engines' ? v.loading : v.emptyOption}</option>
             {engines.map((x) => (
               <option key={x.fitmentId} value={x.fitmentId}>
                 {x.label}
@@ -283,10 +279,10 @@ export default function VehiclePane() {
       </div>
       {loadFailed && (
         <p className="ferr" role="alert">
-          Something went wrong, please try again.
+          {t.results.error}
         </p>
       )}
-      <Results status={status} items={items} onRetry={retryMatches} />
+      <Results status={status} items={items} onRetry={retryMatches} t={t} />
     </div>
   );
 }

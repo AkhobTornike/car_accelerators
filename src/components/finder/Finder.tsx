@@ -1,18 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { content } from '@/components/site/content';
+import type { SiteContent } from '@/components/site/content';
 import CodePane from './CodePane';
 import NotSurePane from './NotSurePane';
 import VehiclePane from './VehiclePane';
 
-const METHODS = [
-  { id: 'vehicle', label: 'By vehicle', icon: 'i-car' },
-  { id: 'code', label: 'By battery code', icon: 'i-search' },
-  { id: 'notsure', label: content.finder.notSure.tab, icon: 'i-cam' },
-] as const;
-
-type Method = (typeof METHODS)[number]['id'];
+type Method = 'vehicle' | 'code' | 'notsure';
 
 function Icons() {
   return (
@@ -52,7 +46,12 @@ function Icons() {
   );
 }
 
-export default function Finder() {
+export default function Finder({ t }: { t: SiteContent['finder'] }) {
+  const METHODS = [
+    { id: 'vehicle', label: t.vehicleTab, icon: 'i-car' },
+    { id: 'code', label: t.codeTab, icon: 'i-search' },
+    { id: 'notsure', label: t.notSure.tab, icon: 'i-cam' },
+  ] as const;
   const [method, setMethod] = useState<Method>('vehicle');
 
   function onKey(e: React.KeyboardEvent) {
@@ -66,7 +65,7 @@ export default function Finder() {
   return (
     <div className="finder-panel">
       <Icons />
-      <div className="tabs" role="tablist" aria-label="Search method" onKeyDown={onKey}>
+      <div className="tabs" role="tablist" aria-label={t.searchMethod} onKeyDown={onKey}>
         {METHODS.map((m) => (
           <button
             key={m.id}
@@ -88,13 +87,13 @@ export default function Finder() {
       </div>
       <div className="tabpanes">
         <div role="tabpanel" id="pane-vehicle" aria-labelledby="tab-vehicle" hidden={method !== 'vehicle'}>
-          {method === 'vehicle' && <VehiclePane />}
+          {method === 'vehicle' && <VehiclePane t={t} />}
         </div>
         <div role="tabpanel" id="pane-code" aria-labelledby="tab-code" hidden={method !== 'code'}>
-          {method === 'code' && <CodePane />}
+          {method === 'code' && <CodePane t={t} />}
         </div>
         <div role="tabpanel" id="pane-notsure" aria-labelledby="tab-notsure" hidden={method !== 'notsure'}>
-          {method === 'notsure' && <NotSurePane />}
+          {method === 'notsure' && <NotSurePane t={t} />}
         </div>
       </div>
     </div>

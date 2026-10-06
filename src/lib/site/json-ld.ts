@@ -22,7 +22,16 @@ export function availabilityOf(stock: JsonLdCatalogBattery['stock']): string {
   return AVAILABILITY[stock];
 }
 
-export function buildJsonLd(siteUrl: string, contact: JsonLdContact, products: JsonLdCatalogBattery[]): Record<string, unknown> {
+const DEFAULT_DESCRIPTION =
+  'Car accumulator sales, fitment confirmation, delivery and installation in Tbilisi. Quote by WhatsApp, phone or Telegram.';
+
+export function buildJsonLd(
+  siteUrl: string,
+  contact: JsonLdContact,
+  products: JsonLdCatalogBattery[],
+  opts: { inLanguage?: string; description?: string } = {},
+): Record<string, unknown> {
+  const { inLanguage = 'en', description = DEFAULT_DESCRIPTION } = opts;
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -30,7 +39,8 @@ export function buildJsonLd(siteUrl: string, contact: JsonLdContact, products: J
         '@type': 'LocalBusiness',
         name: 'AMPER.GE',
         url: siteUrl,
-        description: 'Car accumulator sales, fitment confirmation, delivery and installation in Tbilisi. Quote by WhatsApp, phone or Telegram.',
+        inLanguage,
+        description,
         telephone: contact.phoneDisplay,
         email: contact.email,
         address: { '@type': 'PostalAddress', streetAddress: contact.address, addressLocality: 'Tbilisi', addressCountry: 'GE' },

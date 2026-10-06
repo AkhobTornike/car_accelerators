@@ -1,12 +1,10 @@
-import { content } from './content';
+import type { SiteContent } from './content';
 
-const t = content.tech;
-
-function Gauge({ cycles }: { cycles: number }) {
+function Gauge({ cycles, label }: { cycles: number; label: string }) {
   return (
     <div className="gauge">
       <div className="glabel">
-        <span>Cycle life</span>
+        <span>{label}</span>
         <span className="mono">{cycles} / 12</span>
       </div>
       <div className="cells">
@@ -18,8 +16,7 @@ function Gauge({ cycles }: { cycles: number }) {
   );
 }
 
-function AnatomyFigure() {
-  const f = t.figure;
+function AnatomyFigure({ f }: { f: SiteContent['tech']['figure'] }) {
   return (
     <div className="anat-fig" role="img" aria-label={f.label}>
       <svg viewBox="0 0 520 350" style={{ display: 'block', width: '100%' }}>
@@ -54,7 +51,7 @@ function AnatomyFigure() {
   );
 }
 
-export default function Tech() {
+export default function Tech({ t }: { t: SiteContent['tech'] }) {
   return (
     <section id="tech" aria-labelledby="tech-h">
       <div className="wrap">
@@ -69,7 +66,7 @@ export default function Tech() {
                 {c.name} <small>{c.full}</small>
               </div>
               <p>{c.text}</p>
-              <Gauge cycles={c.cycles} />
+              <Gauge cycles={c.cycles} label={t.cycleLife} />
               <p className={c.verdictOk ? 'verdict yes' : 'verdict no'}>
                 <svg className="ic" aria-hidden="true">
                   <use href={c.verdictOk ? '#i-check' : '#i-x'} />
@@ -88,7 +85,7 @@ export default function Tech() {
           </span>
         </p>
         <div className="anatomy">
-          <AnatomyFigure />
+          <AnatomyFigure f={t.figure} />
           <div>
             <p className="eyebrow">{t.anatomyEyebrow}</p>
             <h3 className="h3">{t.anatomyHeading}</h3>

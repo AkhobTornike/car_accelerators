@@ -223,6 +223,9 @@ nav.mainnav a:hover{ color:var(--ink); background:var(--bg-3) }
 }
 .mmenu-nav a{ text-decoration:none; font:600 13px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); padding:14px 12px; border-radius:4px }
 .mmenu-nav a:hover{ color:var(--ink); background:var(--bg-3) }
+.mmenu-switch{ display:flex; gap:8px; padding:8px 12px 12px }
+.mmenu-switch a{ padding:12px 14px; border:1px solid var(--line-2); border-radius:4px; font-size:12px }
+.mmenu-switch a[aria-current="page"]{ background:var(--amber-soft); border-color:var(--amber); color:var(--amber-ink) }
 @media (max-width:960px){ nav.mainnav{ display:none } .mmenu{ display:block } }
 @media (max-width:640px){ .head-phone span{ display:none } .head-phone{ padding:11px 12px } }
 
@@ -483,3 +486,23 @@ input[type=number]{ width:100%; min-height:46px; background:var(--bg-2); color:v
   padding:6px 9px; border:1px solid var(--line-2); color:var(--ink-3); background:var(--bg-3); white-space:nowrap;
 }
 .admin-cards > li.is-hidden{ opacity:.62 }
+
+/* ---------- two languages (appended by SPARK-07; existing rules above untouched) ---------- */
+.lang-switch{ display:flex; border:1px solid var(--line-2); border-radius:4px; overflow:hidden }
+.lang-switch a{
+  text-decoration:none; font:600 12px/1 var(--sans); letter-spacing:.08em;
+  color:var(--ink-3); padding:12px 14px; min-height:44px; display:inline-flex; align-items:center;
+}
+.lang-switch a:hover{ color:var(--ink); background:var(--bg-3) }
+.lang-switch a[aria-current="page"]{ background:var(--amber-soft); color:var(--amber-ink) }
+@media (max-width:960px){ .lang-switch{ display:none } }
+
+/* Barlow Condensed has no Georgian glyphs: on Georgian pages headings use Noto Sans Georgian first,
+   so they never fall back to an unintended Latin-only display font. Uppercase transforms are kept:
+   text-transform is a no-op on the Georgian script (it has no case), so headings cannot be mangled
+   (the stylesheet contains no lowercase transforms). */
+:lang(ka) h1, :lang(ka) h2, :lang(ka) h3,
+:lang(ka) .h2, :lang(ka) .h3, :lang(ka) .brand-name, :lang(ka) .tbig,
+:lang(ka) .pname, :lang(ka) .rname h3, :lang(ka) .how h3{
+  font-family:var(--font-ge),var(--font-sans),sans-serif;
+}

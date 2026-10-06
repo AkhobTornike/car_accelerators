@@ -1,10 +1,9 @@
 import Image from 'next/image';
-import { content } from './content';
+import type { SiteContent } from './content';
 
-const w = content.why;
-const ICONS = ['#i-batt', '#i-wrench', '#i-shield', '#i-tag'];
+export default function Why({ t: w }: { t: SiteContent['why'] }) {
+  const ICONS = ['#i-batt', '#i-wrench', '#i-shield', '#i-tag'];
 
-export default function Why() {
   return (
     <section id="why" aria-labelledby="why-h">
       <div className="wrap">
