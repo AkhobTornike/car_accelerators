@@ -171,3 +171,37 @@ select:disabled{ opacity:.55; cursor:not-allowed }
   font:600 12px/1 var(--mono); letter-spacing:.16em; color:var(--ink-2);
   border:1px solid var(--line-2); border-radius:2px; padding:5px 7px; text-transform:uppercase;
 }
+
+/* ---------- admin (appended by SPARK-04; existing rules above untouched) ---------- */
+.admin-page{ padding-block:clamp(24px,5vw,48px) }
+.admin-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px }
+.admin-user{ font:500 13px/1.4 var(--mono); color:var(--ink-2); overflow:hidden; text-overflow:ellipsis }
+.admin-login{ max-width:520px; margin:0 auto; text-align:left }
+.admin-hint{ font:400 12.5px/1.5 var(--sans); color:var(--ink-3); max-width:62ch; margin:12px 0 }
+.admin-small{ font-size:13px; color:var(--ink-2); margin-top:6px }
+.admin-error{ border:1px solid var(--rose); border-radius:6px; padding:14px 16px; margin:12px 0; background:var(--bg-2); font-size:14px }
+.admin-error ul{ margin:0; padding-left:18px }
+.admin-error .btn{ margin-top:10px }
+.admin-ferr{ color:var(--rose); font-size:12px; margin:4px 0 0 }
+.admin-success{ border:1px solid var(--ok-line); background:var(--ok-soft); border-radius:6px; padding:18px; margin:12px 0; display:flex; flex-direction:column; gap:8px; align-items:flex-start; font-size:14px }
+.admin-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(172px,1fr)); gap:12px; margin-top:12px }
+.admin-grid .field-end{ justify-content:flex-end }
+.admin-total{ font-size:16px; margin:14px 0 }
+.admin-pick{ list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px }
+.admin-pick button{ width:100%; min-height:44px; text-align:left; background:var(--bg-2); border:1px solid var(--line-2); border-radius:4px; padding:10px 12px; font-size:14px; cursor:pointer; color:var(--ink) }
+.admin-pick button:hover:not(:disabled){ border-color:var(--amber) }
+.admin-pick button:disabled{ opacity:.55; cursor:not-allowed }
+.admin-line{ display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; border:1px solid var(--line); border-radius:6px; padding:12px; margin-top:10px; background:var(--bg-2) }
+@media (max-width:640px){ .admin-line{ grid-template-columns:1fr 1fr } }
+.admin-cards{ list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:10px }
+.admin-cards > li{ border:1px solid var(--line-2); border-radius:6px; padding:14px 16px; background:var(--bg-2) }
+.admin-cards > li.voided{ opacity:.62 }
+.admin-cards > li.empty-stock{ border-style:dashed }
+.admin-card-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap }
+.admin-card-head .mono{ font-family:var(--mono); font-variant-numeric:tabular-nums }
+.admin-row-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px }
+.admin-void{ margin-top:10px; display:flex; flex-direction:column; gap:8px }
+.low{ color:var(--rose); font-weight:700 }
+.admin :focus-visible{ outline:2px solid var(--amber-ink); outline-offset:2px }
+input[type=date]{ width:100%; min-height:46px; background:var(--bg-2); color:var(--ink); border:1px solid var(--ink-4); border-radius:4px; padding:10px 12px; font:400 14px/1.4 var(--sans) }
+input[type=number]{ width:100%; min-height:46px; background:var(--bg-2); color:var(--ink); border:1px solid var(--ink-4); border-radius:4px; padding:10px 12px; font:400 14px/1.4 var(--sans) }

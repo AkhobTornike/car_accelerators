@@ -129,6 +129,15 @@ describe('sales', () => {
     expect(body.sales[0].soldAt).toBe('2026-10-05T10:00:00.000Z');
     expect((await listSales(req('/api/admin/sales?from=garbage'))).status).toBe(400);
   });
+  it('a date-only range means whole days in Tbilisi time: "to=today" includes sales made today, even just after local midnight', async () => {
+    // 2026-10-06 00:30 in Tbilisi (UTC+4) is 2026-10-05 20:30 UTC
+    await postSale(req('/api/admin/sales', { method: 'POST', body: saleBody({ soldAt: '2026-10-05T20:30:00.000Z' }) }));
+    const ids = async (q: string) => (await (await listSales(req(`/api/admin/sales?${q}`))).json()).sales.length;
+    expect(await ids('from=2026-10-06&to=2026-10-06')).toBe(1);   // that Tbilisi day
+    expect(await ids('from=2026-10-05&to=2026-10-05')).toBe(0);   // the previous Tbilisi day
+    expect(await ids('from=2026-10-07')).toBe(0);
+    expect(await ids('to=2026-10-05')).toBe(0);
+  });
   it('voids a sale once: stock returns, second void is 409, unknown sale 404, empty reason 400', async () => {
     const { sale } = await (await postSale(req('/api/admin/sales', { method: 'POST', body: saleBody() }))).json();
     const v = (reason: unknown, id = sale.id) => voidSale(req(`/api/admin/sales/${id}/void`, { method: 'POST', body: { reason } }), ctx({ id }));
