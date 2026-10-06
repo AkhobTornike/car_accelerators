@@ -1,8 +1,7 @@
-import { content } from './content';
+import type { SiteContent } from './content';
 
-const h = content.how;
+export default function How({ t: h }: { t: SiteContent['how'] }) {
 
-export default function How() {
   return (
     <section id="how" aria-labelledby="how-h">
       <div className="wrap">

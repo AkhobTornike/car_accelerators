@@ -1,8 +1,7 @@
-import { content } from './content';
+import type { SiteContent } from './content';
 
-const f = content.faq;
+export default function Faq({ t: f }: { t: SiteContent['faq'] }) {
 
-export default function Faq() {
   return (
     <section id="faq" aria-labelledby="faq-h">
       <div className="wrap faq">

@@ -12,11 +12,40 @@ export interface FaqItem {
   a: string;
 }
 
+export interface StockStrings {
+  stockIn: string;
+  stockCount: string;
+  stockLeft: string;
+  stockOut: string;
+  stockOrder: string;
+}
+
+export interface ResultCardStrings extends StockStrings {
+  ask: string;
+  call: string;
+  upgrade: string;
+  upgradePrefix: string;
+  spec: string;
+  warranty: string;
+  months: string;
+  askForPrice: string;
+  noteTech: string;
+  noteCapacity: string;
+  noteCca: string;
+  noteOrder: string;
+  noteOut: string;
+}
+
 export interface SiteContent {
   brand: { name: string; tld: string };
   skip: string;
   menu: string;
+  meta: { title: string; description: string; ogDescription: string };
+  switcher: { ka: string; en: string };
+  common: { quoteMessage: string };
   nav: { label: string; href: string }[];
+  navLabel: string;
+  homeLabel: string;
   hero: {
     eyebrow: string;
     titleA: string;
@@ -33,6 +62,42 @@ export interface SiteContent {
     eyebrow: string;
     heading: string;
     disclaimer: string;
+    vehicleTab: string;
+    codeTab: string;
+    searchMethod: string;
+    vehicle: {
+      typeLabel: string;
+      types: { car: string; van: string; truck: string; moto: string };
+      year: string;
+      yearPlaceholder: string;
+      make: string;
+      makePlaceholder: string;
+      model: string;
+      engine: string;
+      loading: string;
+      emptyOption: string;
+    };
+    code: { label: string; placeholder: string; submit: string; hint: string };
+    results: {
+      loading: string;
+      error: string;
+      retry: string;
+      emptyTitle: string;
+      emptyText: string;
+      whatsapp: string;
+      card: ResultCardStrings;
+    };
+    messages: {
+      resultAsk: string;
+      vehicleCode: string;
+      emptyMatch: string;
+      notSureHello: string;
+      notSurePhone: string;
+      notSureCar: string;
+      notSureVin: string;
+      notSureNote: string;
+      notSurePhoto: string;
+    };
     notSure: {
       tab: string;
       phone: string;
@@ -52,8 +117,8 @@ export interface SiteContent {
     eyebrow: string;
     heading: string;
     chips: { id: string; label: string }[];
+    filterLabel: string;
     note: string;
-    from: string;
     askForPrice: string;
     spec: string;
     dims: string;
@@ -61,10 +126,13 @@ export interface SiteContent {
     months: string;
     ask: string;
     empty: string;
+    askMessage: string;
+    priceOnRequest: string;
   };
   tech: {
     eyebrow: string;
     heading: string;
+    cycleLife: string;
     columns: TechColumn[];
     startStopTitle: string;
     startStopText: string;
@@ -112,6 +180,13 @@ export interface SiteContent {
     hint: string;
     nameRequired: string;
     phoneRequired: string;
+    quoteHello: string;
+    quoteName: string;
+    quotePhone: string;
+    quoteVehicle: string;
+    quoteBattery: string;
+    quoteChannel: string;
+    quoteNote: string;
     whatsappTitle: string;
     counterTitle: string;
     telegramTitle: string;
@@ -128,15 +203,24 @@ export interface SiteContent {
     hoursAddress: string;
     hoursSuffix: string;
   };
-  footer: { nav: { label: string; href: string }[] };
-  mbar: { whatsapp: string; call: string };
+  footer: { navLabel: string; nav: { label: string; href: string }[] };
+  mbar: { navLabel: string; whatsapp: string; call: string };
   demoNotice: string;
 }
 
-export const content: SiteContent = {
+export const en: SiteContent = {
   brand: { name: 'AMPER', tld: '.GE' },
   skip: 'Skip to battery finder',
   menu: 'Menu',
+  meta: {
+    title: 'AMPER.GE — Car batteries in Tbilisi',
+    description: 'Find the right car battery by vehicle or old-battery code. Fitment confirmed, same-day delivery and installation in Tbilisi.',
+    ogDescription: 'Find the right car battery by vehicle or old-battery code. Same-day delivery and installation.',
+  },
+  switcher: { ka: 'ქართ', en: 'EN' },
+  common: { quoteMessage: 'Hello, I need a car battery. Please send me a quote.' },
+  navLabel: 'Main',
+  homeLabel: '{brand} — home',
   nav: [
     { label: 'Finder', href: '#finder' },
     { label: 'Catalog', href: '#catalog' },
@@ -161,6 +245,66 @@ export const content: SiteContent = {
     eyebrow: 'Battery finder',
     heading: 'Three ways to the right battery',
     disclaimer: 'Fitment is always confirmed by our team before installation.',
+    vehicleTab: 'By vehicle',
+    codeTab: 'By battery code',
+    searchMethod: 'Search method',
+    vehicle: {
+      typeLabel: 'Vehicle type',
+      types: { car: 'Car / SUV', van: 'Van / commercial', truck: 'Truck / bus', moto: 'Motorcycle' },
+      year: 'Year',
+      yearPlaceholder: 'Year…',
+      make: 'Make',
+      makePlaceholder: 'Make…',
+      model: 'Model',
+      engine: 'Engine / fuel',
+      loading: 'Loading…',
+      emptyOption: '—',
+    },
+    code: {
+      label: 'Code, OEM number, group size, Ah or CCA',
+      placeholder: 'e.g. 0 092 S50 080 · L3 · 60Ah · 540A',
+      submit: 'Find equivalents',
+      hint: 'At least 3 characters — the code printed on the old battery label.',
+    },
+    results: {
+      loading: 'Loading…',
+      error: 'Something went wrong, please try again.',
+      retry: 'Retry',
+      emptyTitle: 'No match found',
+      emptyText: 'send us a photo of the old battery on WhatsApp.',
+      whatsapp: 'WhatsApp',
+      card: {
+        ask: 'Ask',
+        call: 'Call',
+        upgrade: 'Upgrade',
+        upgradePrefix: 'Upgrade: ',
+        spec: 'Spec',
+        warranty: 'Warranty',
+        months: 'months',
+        askForPrice: 'Ask for price',
+        stockIn: 'In stock',
+        stockCount: '{n} in stock',
+        stockLeft: 'Only {n} left',
+        stockOut: 'Out of stock',
+        stockOrder: 'Order only',
+        noteTech: 'better technology ({tech})',
+        noteCapacity: 'more capacity',
+        noteCca: 'stronger cold start',
+        noteOrder: 'order only',
+        noteOut: 'out of stock',
+      },
+    },
+    messages: {
+      resultAsk: 'Hello, I am interested in {name} ({ah}Ah {cca}A). My vehicle is: {vehicle}. Please confirm compatibility, availability, price, warranty and installation/delivery options.',
+      vehicleCode: 'battery code {code}',
+      emptyMatch: 'Hello, I could not find a battery match. I am sending a photo of the old battery label.',
+      notSureHello: 'Hello, I am not sure which battery I need.',
+      notSurePhone: 'Phone: {v}',
+      notSureCar: 'Car: {v}',
+      notSureVin: 'VIN: {v}',
+      notSureNote: 'What happened: {v}',
+      notSurePhoto: 'I will attach a photo of the old battery here.',
+    },
     notSure: {
       tab: 'Not sure — send a photo',
       phone: 'Phone / WhatsApp',
@@ -189,8 +333,8 @@ export const content: SiteContent = {
       { id: 'EFB', label: 'EFB' },
       { id: 'AGM', label: 'AGM' },
     ],
+    filterLabel: 'Filter',
     note: 'Prices include the old-battery buy-back discount when you hand in your old unit. Stock is re-counted every morning; WhatsApp shows live numbers.',
-    from: 'from',
     askForPrice: 'Ask for price',
     spec: 'Spec',
     dims: 'Size',
@@ -198,10 +342,13 @@ export const content: SiteContent = {
     months: 'months',
     ask: 'Ask',
     empty: 'No batteries in stock right now — message us on WhatsApp and we source yours within a day.',
+    askMessage: 'Hello, I am interested in {name} ({ah}Ah {cca}A, {price}). Please confirm availability, price, warranty and installation/delivery options.',
+    priceOnRequest: 'price on request',
   },
   tech: {
     eyebrow: 'Technology guide',
     heading: 'SMF, EFB or AGM — in one look',
+    cycleLife: 'Cycle life',
     columns: [
       {
         name: 'SMF',
@@ -317,6 +464,13 @@ export const content: SiteContent = {
     hint: 'No account, no cart, no online payment — a person answers.',
     nameRequired: 'Name is required.',
     phoneRequired: 'Phone or WhatsApp number is required.',
+    quoteHello: 'Hello, I would like a battery quote.',
+    quoteName: 'Name: {v}',
+    quotePhone: 'Phone: {v}',
+    quoteVehicle: 'Vehicle: {v}',
+    quoteBattery: 'Battery/code: {v}',
+    quoteChannel: 'Preferred channel: {v}',
+    quoteNote: 'Note: {v}',
     whatsappTitle: 'WhatsApp — fastest',
     counterTitle: 'Counter line',
     telegramTitle: 'Telegram',
@@ -334,6 +488,7 @@ export const content: SiteContent = {
     hoursSuffix: '— same-day delivery across the city, Rustavi and Mtskheta.',
   },
   footer: {
+    navLabel: 'Footer',
     nav: [
       { label: 'Finder', href: '#finder' },
       { label: 'Catalog', href: '#catalog' },
@@ -342,6 +497,420 @@ export const content: SiteContent = {
       { label: 'Contact', href: '#contact' },
     ],
   },
-  mbar: { whatsapp: 'WhatsApp', call: 'Call' },
+  mbar: { navLabel: 'Quick contact', whatsapp: 'WhatsApp', call: 'Call' },
   demoNotice: 'demo_v1 · fictional brand, sample stock and prices. Fitment is always confirmed by our team before installation.',
 };
+
+export const ka: SiteContent = {
+  "brand": {
+    "name": "AMPER",
+    "tld": ".GE"
+  },
+  "skip": "გადასვლა აკუმულატორის ძიებაზე",
+  "menu": "მენიუ",
+  "meta": {
+    "title": "AMPER.GE — ავტო აკუმულატორები თბილისში",
+    "description": "იპოვეთ შესაფერისი ავტო აკუმულატორი მანქანით ან ძველი აკუმულატორის კოდით. შესაბამისობის დადასტურება, მიტანა და მონტაჟი იმავე დღეს თბილისში.",
+    "ogDescription": "იპოვეთ შესაფერისი ავტო აკუმულატორი მანქანით ან ძველი აკუმულატორის კოდით. მიტანა და მონტაჟი იმავე დღეს."
+  },
+  "switcher": {
+    "ka": "ქართ",
+    "en": "EN"
+  },
+  "common": {
+    "quoteMessage": "გამარჯობა, მჭირდება ავტო აკუმულატორი. გთხოვთ, გამომიგზავნოთ ფასი."
+  },
+  "navLabel": "მთავარი მენიუ",
+  "homeLabel": "{brand} — მთავარი",
+  "nav": [
+    {
+      "label": "ძიება",
+      "href": "#finder"
+    },
+    {
+      "label": "კატალოგი",
+      "href": "#catalog"
+    },
+    {
+      "label": "ტექნოლოგია",
+      "href": "#tech"
+    },
+    {
+      "label": "რატომ ჩვენ",
+      "href": "#why"
+    },
+    {
+      "label": "კითხვები",
+      "href": "#faq"
+    },
+    {
+      "label": "კონტაქტი",
+      "href": "#contact"
+    }
+  ],
+  "hero": {
+    "eyebrow": "თბილისი · ავტო აკუმულატორები · 2009 წლიდან",
+    "titleA": "სწორი აკუმულატორი.",
+    "titleB": "პირველივე ჩართვა.",
+    "lede": "მოძებნეთ თქვენი მანქანით ან ძველ აკუმულატორზე დატანილი კოდით. ჩვენ ვადასტურებთ შესაბამისობას, ფასს WhatsApp-ზე გაცნობებთ და იმავე დღეს ვამონტაჟებთ. თქვენს შეკვეთას პირველი შეტყობინებიდან დამონტაჟებამდე ერთი სპეციალისტი უძღვება.",
+    "whatsapp": "მოგვწერეთ WhatsApp-ზე",
+    "call": "დაგვირეკეთ",
+    "facts": [
+      "გარანტია 24–48 თვე",
+      "შესაბამისობა მოწმდება გაგზავნამდე",
+      "მიტანა და მონტაჟი იმავე დღეს"
+    ],
+    "photoAlt": "AMPER AGM 68 აკუმულატორი სატესტო სადგამზე",
+    "photoModel": "AMPER AGM 68",
+    "photoTag": "ტესტი №4 812"
+  },
+  "finder": {
+    "eyebrow": "აკუმულატორის ძიება",
+    "heading": "სამი გზა სწორ აკუმულატორამდე",
+    "disclaimer": "შესაბამისობას ყოველთვის ჩვენი გუნდი ადასტურებს მონტაჟამდე.",
+    "vehicleTab": "მანქანით",
+    "codeTab": "აკუმულატორის კოდით",
+    "searchMethod": "ძიების მეთოდი",
+    "vehicle": {
+      "typeLabel": "ტრანსპორტის ტიპი",
+      "types": {
+        "car": "მსუბუქი / ჯიპი",
+        "van": "ფურგონი / კომერციული",
+        "truck": "სატვირთო / ავტობუსი",
+        "moto": "მოტოციკლი"
+      },
+      "year": "წელი",
+      "yearPlaceholder": "წელი…",
+      "make": "მარკა",
+      "makePlaceholder": "მარკა…",
+      "model": "მოდელი",
+      "engine": "ძრავა / საწვავი",
+      "loading": "იტვირთება…",
+      "emptyOption": "—"
+    },
+    "code": {
+      "label": "კოდი, OEM ნომერი, ზომის ჯგუფი, Ah ან CCA",
+      "placeholder": "მაგ. 0 092 S50 080 · L3 · 60Ah · 540A",
+      "submit": "ანალოგების პოვნა",
+      "hint": "მინიმუმ 3 სიმბოლო — ძველი აკუმულატორის ეტიკეტზე დატანილი კოდი."
+    },
+    "results": {
+      "loading": "იტვირთება…",
+      "error": "რაღაც შეცდა, გთხოვთ სცადოთ თავიდან.",
+      "retry": "თავიდან ცდა",
+      "emptyTitle": "შესაბამისობა ვერ მოიძებნა",
+      "emptyText": "გამოგვიგზავნეთ ძველი აკუმულატორის ფოტო WhatsApp-ზე.",
+      "whatsapp": "WhatsApp",
+      "card": {
+        "ask": "ჰკითხეთ",
+        "call": "დარეკვა",
+        "upgrade": "გაუმჯობესება",
+        "upgradePrefix": "გაუმჯობესება: ",
+        "spec": "მახასიათებლები",
+        "warranty": "გარანტია",
+        "months": "თვე",
+        "askForPrice": "ფასი მოითხოვეთ",
+        "stockIn": "მარაგშია",
+        "stockCount": "{n} ცალი მარაგშია",
+        "stockLeft": "დარჩა მხოლოდ {n}",
+        "stockOut": "მარაგში არ არის",
+        "stockOrder": "შეკვეთით",
+        "noteTech": "უკეთესი ტექნოლოგია ({tech})",
+        "noteCapacity": "მეტი ტევადობა",
+        "noteCca": "უფრო ძლიერი ცივი სტარტი",
+        "noteOrder": "მხოლოდ შეკვეთით",
+        "noteOut": "მარაგში არ არის"
+      }
+    },
+    "messages": {
+      "resultAsk": "გამარჯობა, მაინტერესებს {name} ({ah}Ah {cca}A). ჩემი მანქანა: {vehicle}. გთხოვთ, დამიდასტუროთ შესაბამისობა, ხელმისაწვდომობა, ფასი, გარანტია და მიტანა/მონტაჟის პირობები.",
+      "vehicleCode": "აკუმულატორის კოდი {code}",
+      "emptyMatch": "გამარჯობა, შესაბამისი აკუმულატორი ვერ ვიპოვე. ვგზავნი ძველი აკუმულატორის ეტიკეტის ფოტოს.",
+      "notSureHello": "გამარჯობა, არ ვარ დარწმუნებული, რომელი აკუმულატორი მჭირდება.",
+      "notSurePhone": "ტელეფონი: {v}",
+      "notSureCar": "მანქანა: {v}",
+      "notSureVin": "VIN: {v}",
+      "notSureNote": "რა მოხდა: {v}",
+      "notSurePhoto": "აქვე მივამაგრებ ძველი აკუმულატორის ფოტოს."
+    },
+    "notSure": {
+      "tab": "არ ვარ დარწმუნებული — გამოგზავნეთ ფოტო",
+      "phone": "ტელეფონი / WhatsApp",
+      "phonePlaceholder": "+995 ___ __ __ __",
+      "car": "მანქანა (წელი, მარკა, მოდელი)",
+      "carPlaceholder": "2018 VW Passat 1.4 TSI",
+      "vin": "VIN (სურვილისამებრ)",
+      "note": "რა მოხდა?",
+      "notePlaceholder": "დილით არ ირთვება. დაფაზე წერია, რომ start-stop მიუწვდომელია.",
+      "submit": "გაუგზავნეთ სალაროს",
+      "hint": "სპეციალისტი სამუშაო საათებში WhatsApp-ზე გიპასუხებთ — ჩვეულებრივ 15 წუთში.",
+      "phoneRequired": "ტელეფონის ნომერი აუცილებელია, რომ დაგიკავშირდეთ.",
+      "carRequired": "მიუთითეთ მანქანა, რომ შესაფერისი აკუმულატორი შევარჩიოთ."
+    }
+  },
+  "catalog": {
+    "eyebrow": "კატალოგი",
+    "heading": "ამ კვირის აკუმულატორები",
+    "chips": [
+      {
+        "id": "all",
+        "label": "ყველა"
+      },
+      {
+        "id": "car",
+        "label": "მსუბუქი"
+      },
+      {
+        "id": "truck",
+        "label": "სატვირთო"
+      },
+      {
+        "id": "moto",
+        "label": "მოტო"
+      },
+      {
+        "id": "deep",
+        "label": "ღრმა განმუხტვის"
+      },
+      {
+        "id": "SMF",
+        "label": "SMF"
+      },
+      {
+        "id": "EFB",
+        "label": "EFB"
+      },
+      {
+        "id": "AGM",
+        "label": "AGM"
+      }
+    ],
+    "filterLabel": "ფილტრი",
+    "note": "ფასში გათვალისწინებულია ძველი აკუმულატორის გამოსყიდვის ფასდაკლება, როცა ძველს გადმოგვცემთ. მარაგი ყოველ დილით თავიდან ითვლება; ზუსტი რაოდენობა WhatsApp-ზე გეცოდინებათ.",
+    "askForPrice": "ფასი მოითხოვეთ",
+    "spec": "მახასიათებლები",
+    "dims": "ზომა",
+    "warranty": "გარანტია",
+    "months": "თვე",
+    "ask": "ჰკითხეთ",
+    "empty": "ამჟამად მარაგში აკუმულატორი არ არის — მოგვწერეთ WhatsApp-ზე და ერთ დღეში შეგიკვეთავთ.",
+    "askMessage": "გამარჯობა, მაინტერესებს {name} ({ah}Ah {cca}A, {price}). გთხოვთ, დამიდასტუროთ ხელმისაწვდომობა, ფასი, გარანტია და მიტანა/მონტაჟის პირობები.",
+    "priceOnRequest": "ფასი მოთხოვნით"
+  },
+  "tech": {
+    "eyebrow": "ტექნოლოგიების გზამკვლევი",
+    "heading": "SMF, EFB თუ AGM — ერთი შეხედვით",
+    "cycleLife": "ციკლების რაოდენობა",
+    "columns": [
+      {
+        "name": "SMF",
+        "full": "ჰერმეტული, მოვლის გარეშე",
+        "text": "სტანდარტული მჟავა-ტყვიის აკუმულატორი, რომელიც ისეა დახურული, რომ დამატება არ სჭირდება. პატიოსანი და ხელმისაწვდომი ტექნოლოგია start-stop-ის გარეშე მანქანებისთვის.",
+        "cycles": 4,
+        "verdictOk": false,
+        "verdict": "Start-stop: რამდენიმე თვეში გაფუჭდება"
+      },
+      {
+        "name": "EFB",
+        "full": "გაძლიერებული თხევადი",
+        "text": "თხევადი აკუმულატორი გამაგრებული ფირფიტებით, რომლებიც ხშირ ხელახალ ჩართვას უძლებს. გონივრული არჩევანია მარტივი start-stop-ისა და ქალაქის მძიმე საცობებისთვის.",
+        "cycles": 7,
+        "verdictOk": true,
+        "verdict": "Start-stop: დიახ — საბაზო სისტემებისთვის"
+      },
+      {
+        "name": "AGM",
+        "full": "მინის ბოჭკოს სეპარატორით",
+        "text": "მჟავა მინის ბოჭკოს სეპარატორებშია შენახული: ყველაზე მაღალი სტარტის სიმძლავრე, ღრმა განმუხტვის გამძლეობა, არ იღვრება. სავალდებულოა პრემიუმ start-stop-ისა და რეკუპერაციული დამუხრუჭებისთვის.",
+        "cycles": 12,
+        "verdictOk": true,
+        "verdict": "Start-stop: დიახ — სავალდებულო სპეციფიკაცია"
+      }
+    ],
+    "startStopTitle": "თქვენი მანქანა start-stop-ია?",
+    "startStopText": "თუ ძრავა შუქნიშანზე ითიშება და მუხრუჭის გაშვებისას თავისით ირთვება, ესე იგი ასეა. ჩვეულებრივი SMF აკუმულატორი start-stop მანქანაზე რამდენიმე თვეში ფუჭდება და გარანტიასაც კარგავს. თუ დარწმუნებული არ ხართ, გამოგვიგზავნეთ VIN და გადავამოწმებთ.",
+    "anatomyEyebrow": "წაიკითხეთ თქვენი აკუმულატორი",
+    "anatomyHeading": "ყველაფერი, რაც სალაროს სჭირდება, ეტიკეტზეა",
+    "anatomy": [
+      {
+        "title": "ტევადობა — Ah",
+        "text": "ამპერ-საათები: რამდენ მუხტს ინახავს აკუმულატორი. ძველის ტოლი ან მასზე მეტი უნდა იყოს."
+      },
+      {
+        "title": "CCA — ცივი სტარტის დენი",
+        "text": "სტარტის სიმძლავრე −18 °C-ზე. მეტი არაუშავს, ძველზე ნაკლები კი არ ივარგებს."
+      },
+      {
+        "title": "წარმოების თარიღის კოდი",
+        "text": "წერტილები აჩვენებს წარმოების თვესა და წელს. ჩვენ ყოველთვის 12 თვეზე ახალ მარაგს ვყიდით."
+      },
+      {
+        "title": "პოლუსების განლაგება",
+        "text": "პლუსი მარცხნივ (L+) ან მარჯვნივ (R+) — არასწორი განლაგება თქვენი მანქანის კაბელებამდე ვერ მიაღწევს."
+      }
+    ],
+    "photoHint": "გადაუღეთ ეტიკეტს და გამოგვიგზავნეთ WhatsApp-ზე — დანარჩენს ჩვენ ამოვიკითხავთ და ერთ პასუხში გიპასუხებთ ფასით.",
+    "figure": {
+      "label": "ავტოაკუმულატორის ეტიკეტის სქემა: ტევადობა, ცივი სტარტის დენი, თარიღის კოდი და პოლუსების განლაგება",
+      "polarity": "პლუსი მარცხნივ · L+",
+      "brand": "AMPER S60",
+      "spec": "12V",
+      "specAh": "60Ah",
+      "specCca": "CCA",
+      "specDin": "540A DIN",
+      "dims": "242 × 175 × 190 · 14.5 კგ",
+      "dateCode": "წარმოების თარიღის კოდი",
+      "stateEye": "მდგომარეობის ინდიკატორი"
+    }
+  },
+  "why": {
+    "eyebrow": "რატომ AMPER",
+    "heading": "სალარო, რომელსაც ნამდვილად დაუკავშირდებით",
+    "items": [
+      {
+        "title": "რეალური მარაგი, რეალური რიცხვები",
+        "text": "კატალოგი თაროზე არსებულს ასახავს. თუ WhatsApp-ზე წერია 6 ცალი, 6 ცალი ნამდვილად გვაქვს."
+      },
+      {
+        "title": "შესაბამისობა მოწმდება გაგზავნამდე",
+        "text": "ბუდის ზომები, პოლუსების განლაგება და start-stop პროფილი თქვენი VIN-ით მოწმდება და არა ვარაუდობით."
+      },
+      {
+        "title": "გარანტიას ადგილზე ვამუშავებთ",
+        "text": "პრეტენზიას ჩვენთან ვამოწმებთ და ვცვლით, ქარხანაში არ ვაგზავნით. დადასტურებული დეფექტის შემთხვევაში შეცვლა 48 საათში."
+      },
+      {
+        "title": "ძველი აკუმულატორის გამოსყიდვა",
+        "text": "ყოველი ძველი აკუმულატორი, რომელსაც გვაბარებთ, ინვოისს გამოაკლდება — 20-დან 40 ₾-მდე ზომის მიხედვით."
+      }
+    ],
+    "photoAlt": "სამონტაჟო უბანი: ტექნიკოსი აკუმულატორს ამოწმებს გაგზავნამდე",
+    "photoCaption": "უბანი 2 · შესაბამისობის შემოწმება გაგზავნამდე"
+  },
+  "how": {
+    "eyebrow": "როგორ მუშაობს",
+    "heading": "შეტყობინებიდან პირველ ჩართვამდე — სამ ნაბიჯში",
+    "steps": [
+      {
+        "n": "01",
+        "title": "მოძებნეთ",
+        "text": "გამოიყენეთ ზემოთ მოცემული ძიება ან გამოგვიგზავნეთ ძველი აკუმულატორის ფოტო. ორივე შემთხვევაში ვიღებთ მანქანას, კოდს ან ორივეს."
+      },
+      {
+        "n": "02",
+        "title": "დაადასტურეთ",
+        "text": "სპეციალისტი თქვენი VIN-ით ხელახლა ამოწმებს შესაბამისობას, ადასტურებს მარაგს და თქვენთვის სასურველ არხზე გიგზავნით ფასს — სამუშაო საათებში 15 წუთში."
+      },
+      {
+        "n": "03",
+        "title": "დამონტაჟდა",
+        "text": "მიტანა და მონტაჟი თქვენს მისამართზე ან გატანა სალაროდან. ძველს ვისყიდით, სისტემას გამოვცდით და მერე ვტოვებთ."
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "ხშირი კითხვები",
+    "heading": "რასაც სალაროში გვეკითხებიან — ერთხელ ვუპასუხებთ",
+    "items": [
+      {
+        "q": "რას ნიშნავს CCA და Ah სინამდვილეში?",
+        "a": "Ah არის რეზერვუარი — რამდენი ენერგია ინახება. CCA არის ტუმბო — რა ძალით უბიძგებს აკუმულატორი ცივ დილას. შემცვლელს ორივეში ძველის მაჩვენებელი მაინც უნდა ჰქონდეს; მეტი Ah არაფერს აფუჭებს, თუ ბუდეში ეტევა, მეტი CCA კი ყოველთვის უსაფრთხოა."
+      },
+      {
+        "q": "ჩემს მანქანას start-stop აქვს. რომელი აკუმულატორი მჭირდება?",
+        "a": "EFB მარტივი start-stop სისტემებისთვის, AGM — როცა მანქანას რეკუპერაციული დამუხრუჭებაც აქვს ან პრემიუმ start-stop სპეციფიკაცია (შეამოწმეთ ინსტრუქცია ან გამოგვიგზავნეთ VIN). ჩვეულებრივი SMF რამდენიმე თვეში ტევადობას კარგავს — ეს ყველაზე ხშირი არასწორი შეძენაა, რასაც ვხვდებით."
+      },
+      {
+        "q": "რამდენ ხანს ძლებს აკუმულატორი თბილისის სიცხეში?",
+        "a": "აკუმულატორს სიცივე კი არა, სიცხე ბერავს, თბილისის ზაფხული კი მკაცრია. ხარისხიანი აკუმულატორისგან 3–4 წელი მოელოდეთ. თუ თქვენი სამ წელს გასცდა, სალაროში უფასო 5-წუთიანი ტესტი გეტყვით, რას გიქადით ზამთარი."
+      },
+      {
+        "q": "ჩემს ძველ აკუმულატორს აიღებთ?",
+        "a": "დიახ — ყოველ მონტაჟთან ერთად და ცალკეც. გამოსყიდვა ზომის მიხედვით 20–40 ₾-ს იხდის, გამოუსადეგარი აკუმულატორები კი სწორად გადამუშავდება და ხევში არ ამოჰყოფს თავს."
+      },
+      {
+        "q": "მხოლოდ ძველ აკუმულატორზე დატანილი კოდი ვიცი.",
+        "a": "ესეც საკმარისია. ჩაწერეთ ძიების მეორე ჩანართში ან გამოგვიგზავნეთ ეტიკეტის ფოტო WhatsApp-ზე — მიმდინარე მარაგიდან ეკვივალენტს ვარჩევთ და შესაბამისობას იმავე საათში ვადასტურებთ."
+      }
+    ]
+  },
+  "contact": {
+    "eyebrow": "კონტაქტი · ფასის მოთხოვნა",
+    "heading": "იკითხეთ ყიდვამდე — არაფერი ღირს",
+    "name": "სახელი",
+    "phone": "ტელეფონი / WhatsApp",
+    "phonePlaceholder": "+995 ___ __ __ __",
+    "vehicle": "მანქანა — წელი, მარკა, მოდელი",
+    "vehiclePlaceholder": "2018 VW Passat 1.4 TSI",
+    "battery": "აკუმულატორი / კოდი (თუ იცით)",
+    "batteryPlaceholder": "AMPER AGM 68",
+    "channel": "სასურველი არხი",
+    "channels": [
+      "WhatsApp",
+      "ზარი",
+      "Telegram",
+      "ელფოსტა"
+    ],
+    "note": "შენიშვნა (სურვილისამებრ)",
+    "notePlaceholder": "დღეს მჭირდება დამონტაჟებული, მანქანა ვაკეშია.",
+    "submit": "ფასის მოთხოვნა",
+    "hint": "ანგარიშის, კალათისა და ონლაინ გადახდის გარეშე — პასუხობს ადამიანი.",
+    "nameRequired": "სახელი აუცილებელია.",
+    "phoneRequired": "ტელეფონის ან WhatsApp-ის ნომერი აუცილებელია.",
+    "quoteHello": "გამარჯობა, მინდა აკუმულატორის ფასი.",
+    "quoteName": "სახელი: {v}",
+    "quotePhone": "ტელეფონი: {v}",
+    "quoteVehicle": "მანქანა: {v}",
+    "quoteBattery": "აკუმულატორი/კოდი: {v}",
+    "quoteChannel": "სასურველი არხი: {v}",
+    "quoteNote": "შენიშვნა: {v}",
+    "whatsappTitle": "WhatsApp — ყველაზე სწრაფი",
+    "counterTitle": "სალაროს ხაზი",
+    "telegramTitle": "Telegram",
+    "emailTitle": "ელფოსტა",
+    "facebookTitle": "Facebook",
+    "instagramTitle": "Instagram",
+    "copyTelegram": "Telegram-ის სახელის კოპირება",
+    "copyEmail": "ელფოსტის მისამართის კოპირება",
+    "copied": "დაკოპირდა",
+    "hoursPrefix": "სალაროს საათები",
+    "hoursDays": "ორშ–შაბ 09:00–19:00",
+    "hoursMid": ", კვირა დასვენების დღეა.",
+    "hoursWarehouse": "საწყობი და სამონტაჟო უბნები:",
+    "hoursAddress": "კახეთის გზატკეცილი 12, თბილისი",
+    "hoursSuffix": "— მიტანა იმავე დღეს მთელ ქალაქში, რუსთავსა და მცხეთაში."
+  },
+  "footer": {
+    "navLabel": "ქვედა მენიუ",
+    "nav": [
+      {
+        "label": "ძიება",
+        "href": "#finder"
+      },
+      {
+        "label": "კატალოგი",
+        "href": "#catalog"
+      },
+      {
+        "label": "ტექნოლოგია",
+        "href": "#tech"
+      },
+      {
+        "label": "კითხვები",
+        "href": "#faq"
+      },
+      {
+        "label": "კონტაქტი",
+        "href": "#contact"
+      }
+    ]
+  },
+  "mbar": {
+    "navLabel": "სწრაფი კონტაქტი",
+    "whatsapp": "WhatsApp",
+    "call": "დარეკვა"
+  },
+  "demoNotice": "demo_v1 · გამოგონილი ბრენდი, სანიმუშო მარაგი და ფასები. შესაბამისობას ყოველთვის ჩვენი გუნდი ადასტურებს მონტაჟამდე."
+};
+
+export const content = { en, ka };

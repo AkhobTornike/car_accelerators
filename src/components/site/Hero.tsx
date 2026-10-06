@@ -1,38 +1,38 @@
 import Image from 'next/image';
 import { telLink, waLink } from '@/lib/site/contact';
-import { content } from './content';
+import type { SiteContent } from './content';
 
-const h = content.hero;
+const FACT_ICONS = ['#i-shield', '#i-check', '#i-truck'];
 
-export default function Hero() {
+export default function Hero({ t, quoteMessage }: { t: SiteContent['hero']; quoteMessage: string }) {
   return (
     <section className="hero" aria-labelledby="hero-h">
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <p className="eyebrow">{h.eyebrow}</p>
+          <p className="eyebrow">{t.eyebrow}</p>
           <h1 id="hero-h">
-            {h.titleA} <em>{h.titleB}</em>
+            {t.titleA} <em>{t.titleB}</em>
           </h1>
-          <p className="lede">{h.lede}</p>
+          <p className="lede">{t.lede}</p>
           <div className="hero-cta">
-            <a className="btn btn-solid" href={waLink('Hello, I need a car battery. Please send me a quote.')} target="_blank" rel="noopener">
+            <a className="btn btn-solid" href={waLink(quoteMessage)} target="_blank" rel="noopener">
               <svg className="ic" aria-hidden="true">
                 <use href="#i-wa" />
               </svg>
-              {h.whatsapp}
+              {t.whatsapp}
             </a>
             <a className="btn btn-line" href={telLink()}>
               <svg className="ic" aria-hidden="true">
                 <use href="#i-phone" />
               </svg>
-              {h.call}
+              {t.call}
             </a>
           </div>
           <ul className="hero-facts">
-            {h.facts.map((f, i) => (
+            {t.facts.map((f, i) => (
               <li key={f}>
                 <svg className="ic" aria-hidden="true">
-                  <use href={['#i-shield', '#i-check', '#i-truck'][i] ?? '#i-check'} />
+                  <use href={FACT_ICONS[i] ?? '#i-check'} />
                 </svg>
                 {f}
               </li>
@@ -41,9 +41,9 @@ export default function Hero() {
         </div>
         <figure className="hero-photo">
           <div className="frame">
-            <Image src="/images/hero.jpg" alt={h.photoAlt} width={1100} height={734} priority />
+            <Image src="/images/hero.jpg" alt={t.photoAlt} width={1100} height={734} priority />
             <figcaption className="photo-tag">
-              <b>{h.photoModel}</b> · {h.photoTag}
+              <b>{t.photoModel}</b> · {t.photoTag}
             </figcaption>
           </div>
         </figure>

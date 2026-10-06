@@ -1,22 +1,24 @@
 import { waLink } from '@/lib/site/contact';
+import { fill } from '@/lib/i18n/i18n';
 import { stockLine } from '@/components/finder/ResultCard';
 import BatteryRender from './BatteryRender';
-import { content } from './content';
+import type { ResultCardStrings, SiteContent } from './content';
 import type { PublicBattery } from '@/server/catalog';
-
-const c = content.catalog;
 
 function dimsOf(b: PublicBattery): string {
   return `${b.dimsMm.l} × ${b.dimsMm.w} × ${b.dimsMm.h}`;
 }
 
-function waText(b: PublicBattery): string {
-  const price = b.price === null ? 'price on request' : `${b.price} GEL`;
-  return `Hello, I am interested in ${b.name} (${b.ah}Ah ${b.cca}A, ${price}). Please confirm availability, price, warranty and installation/delivery options.`;
+interface Props {
+  battery: PublicBattery;
+  t: SiteContent['catalog'];
+  card: ResultCardStrings;
 }
 
-export default function CatalogCard({ battery: b }: { battery: PublicBattery }) {
-  const stock = stockLine(b);
+export default function CatalogCard({ battery: b, t, card }: Props) {
+  const stock = stockLine(b, card);
+  const price = b.price === null ? t.askForPrice : `${b.price} ₾`;
+  const askText = fill(t.askMessage, { name: b.name, ah: b.ah, cca: b.cca, price: b.price === null ? t.priceOnRequest : `${b.price} GEL` });
   return (
     <article className="pcard">
       <div className="prender">
@@ -31,20 +33,19 @@ export default function CatalogCard({ battery: b }: { battery: PublicBattery }) 
         <p className="pspec">
           <b>12V</b> · <b>{b.ah}Ah</b> · <b>{b.cca}A</b>
           <br />
-          {b.caseCode} · {dimsOf(b)} · {b.warrantyMonths} {c.months}
+          {b.caseCode} · {dimsOf(b)} · {b.warrantyMonths} {t.months}
         </p>
         <div className="pfoot">
           <span className="pprice">
-            <small>{c.from}</small>
-            {b.price === null ? c.askForPrice : `${b.price} ₾`}
+            {price}
           </span>
         </div>
         <div className="pbtns">
-          <a className="btn btn-sm btn-wa" target="_blank" rel="noopener" href={waLink(waText(b))}>
+          <a className="btn btn-sm btn-wa" target="_blank" rel="noopener" href={waLink(askText)}>
             <svg className="ic" style={{ width: 14, height: 14 }} aria-hidden="true">
               <use href="#i-wa" />
             </svg>
-            {c.ask}
+            {t.ask}
           </a>
         </div>
       </div>

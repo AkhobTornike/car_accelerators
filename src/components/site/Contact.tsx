@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { contact, telLink, waLink } from '@/lib/site/contact';
-import { content } from './content';
-
-const c = content.contact;
+import { fill } from '@/lib/i18n/i18n';
+import type { SiteContent } from './content';
 
 const CHANNEL_ICONS: Record<string, string> = { WhatsApp: '#i-wa', Call: '#i-phone', Telegram: '#i-send', Email: '#i-mail' };
 
@@ -31,7 +30,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   );
 }
 
-function QuoteForm() {
+function QuoteForm({ t: c }: { t: SiteContent['contact'] }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [vehicle, setVehicle] = useState('');
@@ -54,13 +53,13 @@ function QuoteForm() {
     }
     setPhoneError(null);
     const lines = [
-      `Hello, I would like a battery quote.`,
-      `Name: ${name.trim()}`,
-      `Phone: ${phone.trim()}`,
-      vehicle.trim() ? `Vehicle: ${vehicle.trim()}` : null,
-      battery.trim() ? `Battery/code: ${battery.trim()}` : null,
-      `Preferred channel: ${channel}`,
-      note.trim() ? `Note: ${note.trim()}` : null,
+      c.quoteHello,
+      fill(c.quoteName, { v: name.trim() }),
+      fill(c.quotePhone, { v: phone.trim() }),
+      vehicle.trim() ? fill(c.quoteVehicle, { v: vehicle.trim() }) : null,
+      battery.trim() ? fill(c.quoteBattery, { v: battery.trim() }) : null,
+      fill(c.quoteChannel, { v: channel }),
+      note.trim() ? fill(c.quoteNote, { v: note.trim() }) : null,
     ].filter((l): l is string => l !== null);
     window.open(waLink(lines.join('\n')), '_blank', 'noopener');
   }
@@ -157,7 +156,7 @@ function QuoteForm() {
   );
 }
 
-export default function Contact() {
+export default function Contact({ t: c, quoteMessage }: { t: SiteContent['contact']; quoteMessage: string }) {
   return (
     <section id="contact" aria-labelledby="contact-h">
       <div className="wrap">
@@ -166,9 +165,9 @@ export default function Contact() {
           {c.heading}
         </h2>
         <div className="contact-grid">
-          <QuoteForm />
+          <QuoteForm t={c} />
           <div className="chan-grid">
-            <a className="chan wa" href={waLink('Hello, I need a car battery. Please send me a quote.')} target="_blank" rel="noopener">
+            <a className="chan wa" href={waLink(quoteMessage)} target="_blank" rel="noopener">
               <span className="cic">
                 <svg className="ic" aria-hidden="true">
                   <use href="#i-wa" />
@@ -226,7 +225,7 @@ export default function Contact() {
               </span>
               <span className="ct">
                 <b>{c.facebookTitle}</b>
-                <span>fb.com/amperge</span>
+                <span>{contact.facebook.replace('https://', '')}</span>
               </span>
             </a>
             <a className="chan" href={contact.instagram} target="_blank" rel="noopener">
@@ -237,7 +236,7 @@ export default function Contact() {
               </span>
               <span className="ct">
                 <b>{c.instagramTitle}</b>
-                <span>@amper.ge</span>
+                <span>{contact.instagram.replace('https://instagram.com/', '@')}</span>
               </span>
             </a>
             <div className="hours">
