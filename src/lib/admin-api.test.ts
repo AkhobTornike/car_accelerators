@@ -6,6 +6,7 @@ import {
   changedFields,
   createProduct,
   createSale,
+  deleteImage,
   deleteProduct,
   detectIdDocument,
   downloadExport,
@@ -13,11 +14,15 @@ import {
   formToNewProduct,
   listBatteries,
   listSales,
+  lineTotal,
   parseDisposition,
   parseOemCodes,
   patchProduct,
+  quickSaleBody,
   receiveStock,
+  uploadImage,
   validateProductForm,
+  validateQuickLines,
   voidSale,
   type AdminBattery,
   type ProductFormValues,
@@ -304,5 +309,85 @@ describe('product form helpers', () => {
     expect(validateProductForm(productForm({ price: 'abc' }), { quantity: true })).toEqual(['price']);
     expect(validateProductForm(productForm({ quantity: '2.5' }), { quantity: true })).toEqual(['quantity']);
     expect(validateProductForm(productForm({ quantity: '2.5' }), { quantity: false })).toEqual([]);
+  });
+});
+
+describe('quick sale helpers', () => {
+  it('lineTotal rounds qty x price to 2 decimals', () => {
+    expect(lineTotal(3, 215)).toBe(645);
+    expect(lineTotal(1, 199.99)).toBe(199.99);
+    expect(lineTotal(3, 10.333)).toBe(31);
+  });
+  it('quickSaleBody has lines but no customer or paymentMethod keys', () => {
+    const body = quickSaleBody([{ batteryId: 'b1', qty: 2, unitPrice: 100 }]);
+    expect(body).toEqual({ lines: [{ batteryId: 'b1', qty: 2, unitPrice: 100 }] });
+    expect('customer' in body).toBe(false);
+    expect('paymentMethod' in body).toBe(false);
+  });
+  it('validateQuickLines flags empty, qty, stock and price problems', () => {
+    const stockOf = (id: string) => (id === 'b1' ? 5 : undefined);
+    expect(validateQuickLines([], stockOf)).toEqual([{ index: -1, code: 'empty' }]);
+    expect(validateQuickLines([{ batteryId: 'b1', qty: 2, unitPrice: 100 }], stockOf)).toEqual([]);
+    expect(validateQuickLines([{ batteryId: 'b1', qty: 0, unitPrice: 100 }], stockOf)).toEqual([{ index: 0, code: 'qty' }]);
+    expect(validateQuickLines([{ batteryId: 'b1', qty: 6, unitPrice: 100 }], stockOf)).toEqual([{ index: 0, code: 'stock' }]);
+    expect(validateQuickLines([{ batteryId: 'b9', qty: 6, unitPrice: 100 }], stockOf)).toEqual([]);
+    expect(validateQuickLines([{ batteryId: 'b1', qty: 2, unitPrice: -1 }], stockOf)).toEqual([{ index: 0, code: 'price' }]);
+  });
+  it('createSale without customer sends a body without that key', async () => {
+    const seen: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        seen.push(String(init?.body));
+        return ok({ sale: { id: 's1' } });
+      }),
+    );
+    await createSale({ lines: [{ batteryId: 'b1', qty: 1, unitPrice: 100 }] }, token);
+    const sent = JSON.parse(seen[0]);
+    expect('customer' in sent).toBe(false);
+    expect('paymentMethod' in sent).toBe(false);
+    expect(sent.lines).toEqual([{ batteryId: 'b1', qty: 1, unitPrice: 100 }]);
+  });
+});
+
+describe('product images', () => {
+  it('uploadImage posts FormData without a Content-Type header', async () => {
+    const seen: { url: string; method?: string; contentType: string | null; form: FormData | null }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const headers = new Headers(init?.headers);
+        seen.push({
+          url,
+          method: init?.method,
+          contentType: headers.get('Content-Type'),
+          form: init?.body instanceof FormData ? init.body : null,
+        });
+        return ok({ url: 'https://x/img.webp', images: ['https://x/img.webp'] });
+      }),
+    );
+    const file = new File(['bytes'], 'photo.jpg', { type: 'image/jpeg' });
+    const res = await uploadImage('b1', file, token);
+    expect(res).toEqual({ url: 'https://x/img.webp', images: ['https://x/img.webp'] });
+    expect(seen).toHaveLength(1);
+    expect(seen[0].url).toBe('/api/admin/images');
+    expect(seen[0].method).toBe('POST');
+    expect(seen[0].contentType).toBeNull();
+    expect(seen[0].form?.get('batteryId')).toBe('b1');
+    expect(seen[0].form?.get('file')).toBe(file);
+  });
+  it('deleteImage sends DELETE with a JSON body and parses images', async () => {
+    const seen: { url: string; method?: string; body: string }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        seen.push({ url, method: init?.method, body: String(init?.body) });
+        return ok({ images: [] });
+      }),
+    );
+    await expect(deleteImage('b1', 'https://x/img.webp', token)).resolves.toEqual({ images: [] });
+    expect(seen[0].url).toBe('/api/admin/images');
+    expect(seen[0].method).toBe('DELETE');
+    expect(JSON.parse(seen[0].body)).toEqual({ batteryId: 'b1', url: 'https://x/img.webp' });
   });
 });

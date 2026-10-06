@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import type { Note, PublicBattery, Tier } from '@/lib/api-client';
 import { telLink, waLink } from '@/lib/site/contact';
 import { fill } from '@/lib/i18n/i18n';
@@ -11,8 +12,10 @@ export interface MatchInfo {
   notes: Note[];
 }
 
+type BatteryWithImages = PublicBattery & { images?: string[] };
+
 export interface ResultItem {
-  battery: PublicBattery;
+  battery: BatteryWithImages;
   match: MatchInfo | null;
   vehicle: string;
 }
@@ -43,8 +46,14 @@ export default function ResultCard({ item, t }: { item: ResultItem; t: SiteConte
   const stock = stockLine(b, c);
   const notes = (match?.notes ?? []).map((n) => noteText(n, b.tech, c)).filter((x): x is string => x !== null);
   const askText = fill(t.messages.resultAsk, { name: b.name, ah: b.ah, cca: b.cca, vehicle });
+  const photo = b.images?.[0];
   return (
-    <div className="rcard" role="listitem">
+    <div className={`rcard${photo ? ' has-photo' : ''}`} role="listitem">
+      {photo && (
+        <div className="photo-box">
+          <Image src={photo} alt={b.name} fill sizes="(max-width: 560px) 100vw, 200px" style={{ objectFit: 'cover' }} loading="lazy" />
+        </div>
+      )}
       <div className="rbody">
         <div className="rname">
           <h3>{b.name}</h3>

@@ -26,6 +26,7 @@ export interface AdminBattery {
   quantity?: number;
   oemCodes: string[];
   active: boolean;
+  images?: string[];
 }
 
 export interface SaleCustomer {
@@ -63,10 +64,10 @@ export interface SaleVoid {
 }
 
 export interface NewSaleInput {
-  customer?: SaleCustomer; // omit for a quick sale
+  customer?: SaleCustomer;
   lines: { batteryId: string; qty: number; unitPrice: number }[];
-  discount: number;
-  paymentMethod: PaymentMethod;
+  discount?: number;
+  paymentMethod?: PaymentMethod;
   note?: string;
 }
 
@@ -146,7 +147,13 @@ async function patchJson<T>(path: string, body: unknown, getToken?: TokenGetter)
   ).json()) as T;
 }
 
-async function deleteJson<T>(path: string, getToken?: TokenGetter): Promise<T> {
+async function deleteJson<T>(path: string, body: unknown, getToken?: TokenGetter): Promise<T> {
+  return (await (
+    await adminFetch(path, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, getToken)
+  ).json()) as T;
+}
+
+async function deleteNoBody<T>(path: string, getToken?: TokenGetter): Promise<T> {
   return (await (await adminFetch(path, { method: 'DELETE' }, getToken)).json()) as T;
 }
 
@@ -180,7 +187,21 @@ export function patchProduct(id: string, body: ProductPatch, getToken?: TokenGet
 }
 
 export function deleteProduct(id: string, getToken?: TokenGetter): Promise<{ removedFromFitments: number }> {
-  return deleteJson(`/api/admin/batteries/${encodeURIComponent(id)}`, getToken);
+  return deleteNoBody(`/api/admin/batteries/${encodeURIComponent(id)}`, getToken);
+}
+
+export function uploadImage(batteryId: string, file: Blob, getToken?: TokenGetter): Promise<{ url: string; images: string[] }> {
+  const form = new FormData();
+  form.append('batteryId', batteryId);
+  form.append('file', file);
+  return adminFetch('/api/admin/images', { method: 'POST', body: form }, getToken).then(async (res) => (await res.json()) as {
+    url: string;
+    images: string[];
+  });
+}
+
+export function deleteImage(batteryId: string, url: string, getToken?: TokenGetter): Promise<{ images: string[] }> {
+  return deleteJson('/api/admin/images', { batteryId, url }, getToken);
 }
 
 export function listBatteries(getToken?: TokenGetter): Promise<{ batteries: AdminBattery[] }> {
@@ -249,6 +270,40 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export function calcSaleTotal(lines: { qty: number; unitPrice: number }[], discount: number): number {
   return round2(lines.reduce((s, l) => s + l.qty * l.unitPrice, 0) - discount);
+}
+
+export function lineTotal(qty: number, unitPrice: number): number {
+  return round2(qty * unitPrice);
+}
+
+export interface QuickLineInput {
+  batteryId: string;
+  qty: number;
+  unitPrice: number;
+}
+
+export function quickSaleBody(lines: QuickLineInput[]): { lines: QuickLineInput[] } {
+  return { lines: lines.map((l) => ({ batteryId: l.batteryId, qty: l.qty, unitPrice: l.unitPrice })) };
+}
+
+export type QuickLineError = { index: number; code: 'empty' | 'qty' | 'stock' | 'price' };
+
+export function validateQuickLines(
+  lines: QuickLineInput[],
+  stockOf: (batteryId: string) => number | undefined,
+): QuickLineError[] {
+  if (lines.length === 0) return [{ index: -1, code: 'empty' }];
+  const errors: QuickLineError[] = [];
+  lines.forEach((l, index) => {
+    if (!Number.isInteger(l.qty) || l.qty < 1) {
+      errors.push({ index, code: 'qty' });
+      return;
+    }
+    const stock = stockOf(l.batteryId);
+    if (stock !== undefined && l.qty > stock) errors.push({ index, code: 'stock' });
+    if (!Number.isFinite(l.unitPrice) || l.unitPrice < 0) errors.push({ index, code: 'price' });
+  });
+  return errors;
 }
 
 export function specLine(b: Pick<AdminBattery, 'polarity' | 'caseCode' | 'ah' | 'cca'>): string {

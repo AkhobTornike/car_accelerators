@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { waLink } from '@/lib/site/contact';
 import { fill } from '@/lib/i18n/i18n';
 import { stockLine } from '@/components/finder/ResultCard';
@@ -19,10 +20,17 @@ export default function CatalogCard({ battery: b, t, card }: Props) {
   const stock = stockLine(b, card);
   const price = b.price === null ? t.askForPrice : `${b.price} ₾`;
   const askText = fill(t.askMessage, { name: b.name, ah: b.ah, cca: b.cca, price: b.price === null ? t.priceOnRequest : `${b.price} GEL` });
+  const photo = b.images[0];
   return (
     <article className="pcard">
       <div className="prender">
-        <BatteryRender name={b.name} voltage={12} ah={b.ah} tech={b.tech} stock={b.stock} caseCode={b.caseCode} />
+        {photo ? (
+          <div className="photo-box">
+            <Image src={photo} alt={b.name} fill sizes="(max-width: 640px) 100vw, 400px" style={{ objectFit: 'cover' }} loading="lazy" />
+          </div>
+        ) : (
+          <BatteryRender name={b.name} voltage={12} ah={b.ah} tech={b.tech} stock={b.stock} caseCode={b.caseCode} />
+        )}
       </div>
       <div className="pbody">
         <div className="toprow">
