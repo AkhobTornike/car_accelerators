@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { waLink } from '@/lib/site/contact';
-import { content } from '@/components/site/content';
+import { fill } from '@/lib/i18n/i18n';
+import type { SiteContent } from '@/components/site/content';
 
-const t = content.finder.notSure;
-
-export default function NotSurePane() {
+export default function NotSurePane({ t }: { t: SiteContent['finder'] }) {
+  const n = t.notSure;
+  const m = t.messages;
   const [phone, setPhone] = useState('');
   const [car, setCar] = useState('');
   const [vin, setVin] = useState('');
@@ -17,22 +18,22 @@ export default function NotSurePane() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!phone.trim()) {
-      setPhoneError(t.phoneRequired);
+      setPhoneError(n.phoneRequired);
       return;
     }
     setPhoneError(null);
     if (!car.trim()) {
-      setCarError(t.carRequired);
+      setCarError(n.carRequired);
       return;
     }
     setCarError(null);
     const lines = [
-      'Hello, I am not sure which battery I need.',
-      `Phone: ${phone.trim()}`,
-      `Car: ${car.trim()}`,
-      vin.trim() ? `VIN: ${vin.trim()}` : null,
-      note.trim() ? `What happened: ${note.trim()}` : null,
-      'I will attach a photo of the old battery here.',
+      m.notSureHello,
+      fill(m.notSurePhone, { v: phone.trim() }),
+      fill(m.notSureCar, { v: car.trim() }),
+      vin.trim() ? fill(m.notSureVin, { v: vin.trim() }) : null,
+      note.trim() ? fill(m.notSureNote, { v: note.trim() }) : null,
+      m.notSurePhoto,
     ].filter((l): l is string => l !== null);
     window.open(waLink(lines.join('\n')), '_blank', 'noopener');
   }
@@ -42,12 +43,12 @@ export default function NotSurePane() {
       <div className="fields">
         <div className="field">
           <label htmlFor="ns-phone">
-            {t.phone} <span className="req">*</span>
+            {n.phone} <span className="req">*</span>
           </label>
           <input
             type="tel"
             id="ns-phone"
-            placeholder={t.phonePlaceholder}
+            placeholder={n.phonePlaceholder}
             required
             value={phone}
             aria-invalid={phoneError !== null}
@@ -64,12 +65,12 @@ export default function NotSurePane() {
         </div>
         <div className="field">
           <label htmlFor="ns-car">
-            {t.car} <span className="req">*</span>
+            {n.car} <span className="req">*</span>
           </label>
           <input
             type="text"
             id="ns-car"
-            placeholder={t.carPlaceholder}
+            placeholder={n.carPlaceholder}
             value={car}
             aria-invalid={carError !== null}
             onChange={(e) => {
@@ -84,12 +85,12 @@ export default function NotSurePane() {
           )}
         </div>
         <div className="field">
-          <label htmlFor="ns-vin">{t.vin}</label>
+          <label htmlFor="ns-vin">{n.vin}</label>
           <input type="text" id="ns-vin" className="code-input" autoComplete="off" value={vin} onChange={(e) => setVin(e.target.value)} />
         </div>
         <div className="field field-full">
-          <label htmlFor="ns-note">{t.note}</label>
-          <textarea id="ns-note" placeholder={t.notePlaceholder} value={note} onChange={(e) => setNote(e.target.value)} />
+          <label htmlFor="ns-note">{n.note}</label>
+          <textarea id="ns-note" placeholder={n.notePlaceholder} value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
       </div>
       <div className="find-actions">
@@ -97,9 +98,9 @@ export default function NotSurePane() {
           <svg className="ic" aria-hidden="true">
             <use href="#i-send" />
           </svg>
-          {t.submit}
+          {n.submit}
         </button>
-        <p className="find-hint">{t.hint}</p>
+        <p className="find-hint">{n.hint}</p>
       </div>
     </form>
   );

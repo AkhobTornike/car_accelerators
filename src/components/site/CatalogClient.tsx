@@ -3,23 +3,29 @@
 import { useState } from 'react';
 import { filterCatalog, type CatalogChip } from '@/lib/site/catalog-filter';
 import CatalogCard from './CatalogCard';
-import { content } from './content';
+import type { ResultCardStrings, SiteContent } from './content';
 import type { PublicBattery } from '@/server/catalog';
 
-export default function CatalogClient({ batteries }: { batteries: PublicBattery[] }) {
+interface Props {
+  batteries: PublicBattery[];
+  t: SiteContent['catalog'];
+  card: ResultCardStrings;
+}
+
+export default function CatalogClient({ batteries, t, card }: Props) {
   const [chip, setChip] = useState<CatalogChip>('all');
   const visible = filterCatalog(batteries, chip);
   return (
     <div>
       <div className="cat-head">
         <div>
-          <p className="eyebrow">{content.catalog.eyebrow}</p>
+          <p className="eyebrow">{t.eyebrow}</p>
           <h2 className="h2" id="cat-h">
-            {content.catalog.heading}
+            {t.heading}
           </h2>
         </div>
-        <div className="chipbar" role="group" aria-label="Filter">
-          {content.catalog.chips.map((ch) => (
+        <div className="chipbar" role="group" aria-label={t.filterLabel}>
+          {t.chips.map((ch) => (
             <button
               key={ch.id}
               className="mchip"
@@ -33,11 +39,11 @@ export default function CatalogClient({ batteries }: { batteries: PublicBattery[
         </div>
       </div>
       {visible.length === 0 ? (
-        <p className="empty">{content.catalog.empty}</p>
+        <p className="empty">{t.empty}</p>
       ) : (
         <div className="grid-products">
           {visible.map((b) => (
-            <CatalogCard key={b.id} battery={b} />
+            <CatalogCard key={b.id} battery={b} t={t} card={card} />
           ))}
         </div>
       )}
