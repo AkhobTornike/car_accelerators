@@ -98,6 +98,9 @@ export function validateData(batteries: unknown[], fitments: unknown[], extra?: 
     if (f.yearFrom > f.yearTo) {
       issues.push({ level: 'error', code: 'bad-year-range', entity: 'fitment', id: f.id, message: `fitment "${f.id}": yearFrom ${f.yearFrom} > yearTo ${f.yearTo}` });
     }
+    if (f.source !== 'estimated' && (!f.oem.polarity || (!f.oem.caseCode && !f.oem.dimsMm))) {
+      issues.push({ level: 'error', code: 'incomplete-oem', entity: 'fitment', id: f.id, message: `fitment "${f.id}": polarity and a case code or dimensions are required unless the row is estimated` });
+    }
     if (f.oem.ahMax !== undefined && f.oem.ahMax < f.oem.ahMin) {
       issues.push({ level: 'error', code: 'ah-window-empty', entity: 'fitment', id: f.id, message: `fitment "${f.id}": oem.ahMax ${f.oem.ahMax} < oem.ahMin ${f.oem.ahMin}` });
     }
@@ -156,10 +159,16 @@ export function validateData(batteries: unknown[], fitments: unknown[], extra?: 
   }
 
   const activeBatteries = goodBatteries.filter((b) => b.active);
+  let estimatedUnmatched = 0;
   for (const f of goodFitments) {
     if (matchBatteries(f, activeBatteries).length === 0) {
+      // Estimated rows (generated from public engine data) outnumber the catalogue: one summary instead of thousands of lines.
+      if (f.source === 'estimated') { estimatedUnmatched += 1; continue; }
       issues.push({ level: 'warning', code: 'no-match', entity: 'fitment', id: f.id, message: `fitment "${f.id}": no battery matches — a customer would see an empty result` });
     }
+  }
+  if (estimatedUnmatched) {
+    issues.push({ level: 'warning', code: 'no-match-estimated', entity: 'fitment', id: '(estimated rows)', message: `${estimatedUnmatched} estimated fitments have no matching battery in the catalogue — add models or accept that these cars show an empty result` });
   }
 
   if (extra === undefined) return issues;

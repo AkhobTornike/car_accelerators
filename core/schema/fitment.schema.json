@@ -15,7 +15,7 @@
     "yearTo": { "type": "integer", "minimum": 1950, "maximum": 2100 },
     "startStop": { "type": "boolean" },
     "oem": {
-      "type": "object", "additionalProperties": false, "required": ["ahMin", "ccaMin", "polarity", "techMin"],
+      "type": "object", "additionalProperties": false, "required": ["ahMin", "ccaMin", "techMin"],
       "properties": {
         "ahMin": { "type": "number", "exclusiveMinimum": 0, "maximum": 300 },
         "ahMax": { "type": "number", "exclusiveMinimum": 0, "maximum": 300 },
@@ -33,12 +33,11 @@
         "terminal": { "type": "string", "minLength": 1 },
         "holdDown": { "type": "string", "minLength": 1 },
         "techMin": { "enum": ["SMF", "EFB", "AGM"] }
-      },
-      "anyOf": [{ "required": ["caseCode"] }, { "required": ["dimsMm"] }]
+      }
     },
     "include": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
     "exclude": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
-    "source": { "enum": ["shop", "manufacturer", "demo"] },
+    "source": { "enum": ["shop", "manufacturer", "demo", "estimated"] },
     "verified": { "type": "boolean" }
   }
 }

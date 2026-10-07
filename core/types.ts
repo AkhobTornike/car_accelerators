@@ -37,7 +37,7 @@ export interface OemSpec {
   ahMin: number;
   ahMax?: number;                   // overrides FITMENT_CONFIG.ahMaxFactor when set
   ccaMin: number;
-  polarity: Polarity;
+  polarity?: Polarity;              // unknown for estimated fitments: the engine then does not filter on it
   caseCode?: string;
   dimsMm?: { l: number; w: number; h: number };   // fallback when caseCode is unknown
   terminal?: string;
@@ -57,7 +57,8 @@ export interface Fitment {
   oem: OemSpec;
   include?: string[];               // battery ids always offered (pinned by the shop)
   exclude?: string[];               // battery ids never offered
-  source: 'shop' | 'manufacturer' | 'demo';
+  // 'estimated' = generated from public engine data and rules of thumb: polarity and case are unknown, every match says "confirm the fit"
+  source: 'shop' | 'manufacturer' | 'demo' | 'estimated';
   verified: boolean;                // false until a human confirmed this row
 }
 
@@ -66,7 +67,7 @@ export type RejectReason =
   | 'holddown' | 'terminal' | 'ah-low' | 'ah-high' | 'cca-low' | 'tech' | 'excluded';
 
 export type Tier = 'oem' | 'upgrade';
-export type Note = 'tech-upgrade' | 'higher-capacity' | 'higher-cca' | 'pinned' | 'order-only' | 'out-of-stock';
+export type Note = 'tech-upgrade' | 'higher-capacity' | 'higher-cca' | 'pinned' | 'order-only' | 'out-of-stock' | 'confirm-fit';
 
 export interface Match {
   battery: Battery;

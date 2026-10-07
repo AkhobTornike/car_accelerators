@@ -2,7 +2,7 @@ export type VehicleType = 'car' | 'van' | 'truck' | 'moto';
 export type Stock = 'in' | 'order' | 'out';
 export type Tech = 'SMF' | 'EFB' | 'AGM' | 'DEEP-CYCLE';
 export type Tier = 'oem' | 'upgrade';
-export type Note = 'tech-upgrade' | 'higher-capacity' | 'higher-cca' | 'pinned' | 'order-only' | 'out-of-stock';
+export type Note = 'tech-upgrade' | 'higher-capacity' | 'higher-cca' | 'pinned' | 'order-only' | 'out-of-stock' | 'confirm-fit';
 
 export interface DimsMm {
   l: number;

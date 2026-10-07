@@ -36,6 +36,7 @@ function noteText(n: Note, tech: string, c: ResultCardStrings): string | null {
   if (n === 'higher-cca') return c.noteCca;
   if (n === 'order-only') return c.noteOrder;
   if (n === 'out-of-stock') return c.noteOut;
+  if (n === 'confirm-fit') return c.noteConfirm;
   return null;
 }
 
