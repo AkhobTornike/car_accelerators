@@ -1,6 +1,7 @@
 // Loads data/batteries.json and data/fitments.json into Firestore and builds the vehicle index
 // (vehicleIndex/{type}) in one go. Replaces the content of those three collections; sales, movements and
 // the change log are never touched. data/opening-stock.json (optional) becomes initial stock-ledger movements.
+// --fitments-only replaces just fitments and the vehicle index and leaves batteries (stock, prices, photos) alone.
 //
 //   emulator:  FIRESTORE_EMULATOR_HOST=127.0.0.1:8089 node --experimental-strip-types scripts/seed-firestore.ts
 //   real:      GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node --experimental-strip-types scripts/seed-firestore.ts --confirm
@@ -51,14 +52,15 @@ async function fill(name: string, rows: Record<string, unknown>[]) {
   }
 }
 
-for (const c of ['batteries', 'fitments', 'vehicleIndex']) await clear(c);
-const stockOf = new Map(openingStock.map((o) => [o.batteryId, o.qty]));
+const fitmentsOnly = process.argv.includes('--fitments-only');
+for (const c of fitmentsOnly ? ['fitments', 'vehicleIndex'] : ['batteries', 'fitments', 'vehicleIndex']) await clear(c);
+const stockOf = new Map((fitmentsOnly ? [] : openingStock).map((o) => [o.batteryId, o.qty]));
 const unknown = [...stockOf.keys()].filter((id) => !batteries.some((b) => b.id === id));
 if (unknown.length) {
   console.error(`opening-stock.json names unknown batteries: ${unknown.join(', ')} — nothing was written.`);
   process.exit(1);
 }
-await fill('batteries', batteries.map((b) => (stockOf.has(String(b.id)) ? { ...b, quantity: stockOf.get(String(b.id)) } : b)));
+if (!fitmentsOnly) await fill('batteries', batteries.map((b) => (stockOf.has(String(b.id)) ? { ...b, quantity: stockOf.get(String(b.id)) } : b)));
 const at = new Date().toISOString();
 for (const [batteryId, qty] of stockOf) {
   const ref = db.collection('movements').doc(`initial-${batteryId}`);

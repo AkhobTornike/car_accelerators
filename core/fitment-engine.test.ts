@@ -135,3 +135,22 @@ describe('helpers', () => {
     expect([2009, 2010, 2015, 2016].map((y) => yearInRange(f, y))).toEqual([false, true, true, false]);
   });
 });
+
+describe('estimated fitments (generated from public engine data)', () => {
+  const est = (oem: Partial<Fitment['oem']> = {}) =>
+    fit({ source: 'estimated', verified: false }, { polarity: undefined, caseCode: undefined, ...oem });
+  it('ignores polarity and case, still checks Ah, CCA and technology, and always says "confirm the fit"', () => {
+    const [m] = matchBatteries(est(), [bat({ id: 'a', polarity: 'L+', caseCode: 'L3' })]);
+    expect(m.notes).toContain('confirm-fit');
+    expect(why(est(), bat({ id: 'a', ah: 59 }))).toEqual(['ah-low']);
+    expect(why(est(), bat({ id: 'a', cca: 100 }))).toEqual(['cca-low']);
+    expect(why(est({ techMin: 'EFB' }), bat({ id: 'a', tech: 'SMF' }))).toEqual(['tech']);
+  });
+  it('a shop-sourced fitment with no size information still cannot be confirmed', () => {
+    expect(why(fit({ source: 'shop' }, { caseCode: undefined }), bat({ id: 'a' }))).toEqual(['case']);
+  });
+  it('a pinned battery on an estimated fitment is also marked "confirm the fit"', () => {
+    const [m] = matchBatteries({ ...est(), include: ['a'] }, [bat({ id: 'a', polarity: 'L+' })]);
+    expect(m.notes).toEqual(expect.arrayContaining(['pinned', 'confirm-fit']));
+  });
+});

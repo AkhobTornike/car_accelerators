@@ -34,6 +34,7 @@ export interface ResultCardStrings extends StockStrings {
   noteCca: string;
   noteOrder: string;
   noteOut: string;
+  noteConfirm: string;
 }
 
 export interface SiteContent {
@@ -292,6 +293,7 @@ export const en: SiteContent = {
         noteCca: 'stronger cold start',
         noteOrder: 'order only',
         noteOut: 'out of stock',
+        noteConfirm: 'estimated fit: we confirm the exact size and polarity for your car before you buy',
       },
     },
     messages: {
@@ -619,7 +621,8 @@ export const ka: SiteContent = {
         "noteCapacity": "მეტი ტევადობა",
         "noteCca": "უფრო ძლიერი ცივი სტარტი",
         "noteOrder": "მხოლოდ შეკვეთით",
-        "noteOut": "მარაგში არ არის"
+        "noteOut": "მარაგში არ არის",
+        "noteConfirm": "სავარაუდო შესაბამისობა: შეძენამდე თქვენს მანქანაზე ზუსტ ზომასა და პოლარობას დაგიდასტურებთ"
       }
     },
     "messages": {

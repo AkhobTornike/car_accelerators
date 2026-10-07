@@ -28,7 +28,7 @@ function reject(f: Fitment, b: Battery): RejectReason[] {
   if (!b.active) r.push('inactive');
   if (!SEGMENTS_FOR[f.type].includes(b.segment)) r.push('segment');
   if (b.voltage !== 12) r.push('voltage');
-  if (b.polarity !== oem.polarity) r.push('polarity');
+  if (oem.polarity && b.polarity !== oem.polarity) r.push('polarity');
 
   if (oem.caseCode) {
     if (b.caseCode !== oem.caseCode) r.push('case');
@@ -36,7 +36,7 @@ function reject(f: Fitment, b: Battery): RejectReason[] {
     const t = FITMENT_CONFIG.dimToleranceMm;
     const d = b.dimsMm;
     if (Math.abs(d.l - oem.dimsMm.l) > t || Math.abs(d.w - oem.dimsMm.w) > t || Math.abs(d.h - oem.dimsMm.h) > t) r.push('dims');
-  } else {
+  } else if (f.source !== 'estimated') {
     r.push('case'); // no size info on the OEM side => cannot confirm fit
   }
 
@@ -59,6 +59,7 @@ function classify(f: Fitment, b: Battery): { tier: Tier; notes: Note[] } {
   if (ccaUp) notes.push('higher-cca');
   if (b.stock === 'order') notes.push('order-only');
   if (b.stock === 'out') notes.push('out-of-stock');
+  if (f.source === 'estimated') notes.push('confirm-fit');
   return { tier: techUp || ahUp || ccaUp ? 'upgrade' : 'oem', notes };
 }
 
@@ -70,6 +71,7 @@ export function matchBatteries(f: Fitment, batteries: Battery[]): Match[] {
     const pinned = f.include?.includes(b.id) && b.active;
     if (!pinned && reject(f, b).length) continue;
     const c = pinned ? { tier: 'oem' as Tier, notes: ['pinned' as Note] } : classify(f, b);
+    if (pinned && f.source === 'estimated') c.notes.push('confirm-fit');
     out.push({ battery: b, tier: c.tier, spec: specLine(b), notes: c.notes });
   }
   const tierRank = { oem: 0, upgrade: 1 } as const;
