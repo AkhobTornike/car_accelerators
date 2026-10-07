@@ -1,4 +1,5 @@
 import { getFirebaseAuth } from './firebase-client';
+import type { ShopProfile } from '@/server/shop-profile';
 
 export type PaymentMethod = 'cash' | 'transfer' | 'card';
 export type ExportKind = 'sales' | 'stock' | 'movements';
@@ -232,6 +233,10 @@ export function adjustStock(
   getToken?: TokenGetter,
 ): Promise<{ movement: { id: string } }> {
   return postJson('/api/admin/stock/adjust', body, getToken);
+}
+
+export function getShopProfile(getToken?: TokenGetter): Promise<{ profile: ShopProfile; demo: boolean }> {
+  return getJson('/api/admin/shop-profile', getToken);
 }
 
 export function parseDisposition(header: string | null): string | null {

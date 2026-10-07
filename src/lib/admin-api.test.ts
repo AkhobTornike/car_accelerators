@@ -12,6 +12,7 @@ import {
   downloadExport,
   formatMoney,
   formToNewProduct,
+  getShopProfile,
   listBatteries,
   listSales,
   lineTotal,
@@ -389,5 +390,20 @@ describe('product images', () => {
     expect(seen[0].url).toBe('/api/admin/images');
     expect(seen[0].method).toBe('DELETE');
     expect(JSON.parse(seen[0].body)).toEqual({ batteryId: 'b1', url: 'https://x/img.webp' });
+  });
+});
+
+describe('shop profile', () => {
+  it('getShopProfile parses profile and demo flag', async () => {
+    const seen: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        seen.push(url);
+        return ok({ profile: { brand: 'X', vatPayer: true }, demo: true });
+      }),
+    );
+    await expect(getShopProfile(token)).resolves.toEqual({ profile: { brand: 'X', vatPayer: true }, demo: true });
+    expect(seen).toEqual(['/api/admin/shop-profile']);
   });
 });
