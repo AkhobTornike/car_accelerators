@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { AdminApiError, formatMoney, listSales, voidSale, type Sale, type SaleVoid } from '@/lib/admin-api';
+import ReceiptDialog from './ReceiptDialog';
+import { formatTbilisiDateTime } from '@/lib/receipt';
 import RequestError from './RequestError';
 import { labels } from './labels';
 
@@ -19,7 +21,6 @@ function defaultRange(): { from: string; to: string } {
   return { from: isoDay(from), to: isoDay(to) };
 }
 
-const fmtDate = new Intl.DateTimeFormat('ka-GE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tbilisi' });
 
 export default function SalesList({ onSignOut }: { onSignOut: () => void }) {
   const [range] = useState(defaultRange);
@@ -32,6 +33,7 @@ export default function SalesList({ onSignOut }: { onSignOut: () => void }) {
   const [voidFor, setVoidFor] = useState<string | null>(null);
   const [reason, setReason] = useState('');
   const [voiding, setVoiding] = useState(false);
+  const [printing, setPrinting] = useState<Sale | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -100,15 +102,22 @@ export default function SalesList({ onSignOut }: { onSignOut: () => void }) {
                 <span className="mono">{formatMoney(s.total)}</span>
               </div>
               <p className="admin-small">
-                {fmtDate.format(new Date(s.soldAt))} · {s.lines.map((l) => `${l.qty} × ${l.name}`).join(', ')} · {t.payment}: {s.paymentMethod}
+                {formatTbilisiDateTime(s.soldAt)} · {s.lines.map((l) => `${l.qty} × ${l.name}`).join(', ')} · {t.payment}: {s.paymentMethod}
               </p>
               <p className="admin-small">
                 {t.status}: {v ? `${t.voided} (${t.voidReasonShown}: ${v.reason})` : labels.sales.active}
               </p>
-              {!v && voidFor !== s.id && (
-                <button className="btn btn-line btn-sm" type="button" onClick={() => { setVoidFor(s.id); setReason(''); }}>
-                  {t.voidAction}
-                </button>
+              {!v && (
+                <div className="admin-row-actions">
+                  {voidFor !== s.id && (
+                    <button className="btn btn-line btn-sm" type="button" onClick={() => { setVoidFor(s.id); setReason(''); }}>
+                      {t.voidAction}
+                    </button>
+                  )}
+                  <button className="btn btn-line btn-sm" type="button" onClick={() => setPrinting(s)}>
+                    {labels.print.action}
+                  </button>
+                </div>
               )}
               {!v && voidFor === s.id && (
                 <div className="admin-void">
@@ -125,6 +134,7 @@ export default function SalesList({ onSignOut }: { onSignOut: () => void }) {
           );
         })}
       </ul>
+      {printing && <ReceiptDialog sale={printing} onClose={() => setPrinting(null)} />}
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
   type Sale,
 } from '@/lib/admin-api';
 import QuickSale from './QuickSale';
+import ReceiptDialog from './ReceiptDialog';
 import RequestError from './RequestError';
 import SaleLines, { type SaleLineDraft } from './SaleLines';
 import { labels } from './labels';
@@ -35,6 +36,7 @@ export default function NewSale({ onSignOut }: { onSignOut: () => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<AdminApiError | null>(null);
   const [done, setDone] = useState<Sale | null>(null);
+  const [printing, setPrinting] = useState<Sale | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -127,9 +129,15 @@ export default function NewSale({ onSignOut }: { onSignOut: () => void }) {
         <p>
           {done.customer ? `${done.customer.firstName} ${done.customer.lastName}` : labels.sales.quickSale} · {done.lines.map((l) => `${l.qty} × ${l.name}`).join(', ')}
         </p>
-        <button className="btn btn-solid" type="button" onClick={startAgain}>
-          {t.again}
-        </button>
+        <div className="admin-row-actions">
+          <button className="btn btn-solid" type="button" onClick={startAgain}>
+            {t.again}
+          </button>
+          <button className="btn btn-line" type="button" onClick={() => setPrinting(done)}>
+            {labels.print.action}
+          </button>
+        </div>
+        {printing && <ReceiptDialog sale={printing} onClose={() => setPrinting(null)} />}
       </div>
     );
   }
