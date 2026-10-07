@@ -11,7 +11,8 @@
     "test": "vitest run",
     "validate:data": "node --experimental-strip-types scripts/validate-data-cli.ts",
     "seed:firestore": "node --experimental-strip-types scripts/seed-firestore.ts",
-    "test:emulators": "firebase emulators:exec --only firestore,auth --project demo-amper \"vitest run src/server/firestore src/server/admin-auth.emulator\""
+    "test:emulators": "firebase emulators:exec --only firestore,auth --project demo-amper \"vitest run src/server/firestore src/server/admin-auth.emulator\"",
+    "import:excel": "node --experimental-strip-types scripts/import-excel.ts"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.1",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "exceljs": "^4.4.0",
     "firebase-tools": "^15.32.1",
     "typescript": "^5",
     "vitest": "^5.0.3"
