@@ -18,6 +18,8 @@ import { locales } from '@/lib/i18n/types';
 import { contact } from '@/lib/site/contact';
 import { buildJsonLd, serializeJsonLd } from '@/lib/site/json-ld';
 
+// The catalogue section reads live prices, stock and photos: rebuild the static page at most once a minute.
+export const revalidate = 60;
 export const dynamicParams = false;
 
 export function generateStaticParams() {
