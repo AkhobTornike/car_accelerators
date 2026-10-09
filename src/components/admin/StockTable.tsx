@@ -154,6 +154,9 @@ export default function StockTable({ onSignOut }: { onSignOut: () => void }) {
       {panel && (
         <div className="admin-panel">
           <ProductForm
+            // one form per product: without the key, opening "edit" on another product kept the previous product's
+            // values in the form while saving them to the newly chosen one
+            key={panel.mode === 'edit' ? panel.battery.id : 'add'}
             initial={panel.mode === 'edit' ? panel.battery : null}
             caseCodes={caseCodes}
             onClose={() => setPanel(null)}
