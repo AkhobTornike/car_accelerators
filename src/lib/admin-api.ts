@@ -239,6 +239,11 @@ export function getShopProfile(getToken?: TokenGetter): Promise<{ profile: ShopP
   return getJson('/api/admin/shop-profile', getToken);
 }
 
+export async function sendWeeklySummaryNow(getToken?: TokenGetter): Promise<{ sent: true; to: string[] }> {
+  const res = await adminFetch('/api/admin/weekly-summary', { method: 'POST' }, getToken);
+  return (await res.json()) as { sent: true; to: string[] };
+}
+
 export function parseDisposition(header: string | null): string | null {
   const m = header?.match(/filename="([^"]+)"/);
   return m ? m[1] : null;
