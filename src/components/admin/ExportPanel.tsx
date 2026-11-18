@@ -22,6 +22,11 @@ export default function ExportPanel({ onSignOut }: { onSignOut: () => void }) {
     try {
       await sendWeeklySummaryNow();
       setMail('sent');
+      // The old link is dead and this session was revoked: sign out and reload after the message was read (the old address then answers 404).
+      window.setTimeout(() => {
+        onSignOut();
+        window.location.reload();
+      }, 4000);
     } catch (e) {
       setMailError(e as AdminApiError);
       setMail('idle');

@@ -113,6 +113,8 @@ export async function adminFetch(path: string, init?: RequestInit, getToken: Tok
   const headers = new Headers(init?.headers);
   const token = await getToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
+  // The address this admin page was opened on: the server only serves sessions opened on a current address.
+  if (typeof window !== 'undefined') headers.set('X-Admin-Link', window.location.pathname.split('/')[2] ?? '');
   let res: Response;
   try {
     res = await fetch(path, { ...init, headers });
@@ -242,6 +244,10 @@ export function getShopProfile(getToken?: TokenGetter): Promise<{ profile: ShopP
 export async function sendWeeklySummaryNow(getToken?: TokenGetter): Promise<{ sent: true; to: string[] }> {
   const res = await adminFetch('/api/admin/weekly-summary', { method: 'POST' }, getToken);
   return (await res.json()) as { sent: true; to: string[] };
+}
+
+export async function pingAdmin(getToken?: TokenGetter): Promise<void> {
+  await adminFetch('/api/admin/ping', undefined, getToken);
 }
 
 export function parseDisposition(header: string | null): string | null {

@@ -1,7 +1,8 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from './firebase-app';
-import { registerAdminAccess } from './security-state';
+import { validAdminSegments, rotates } from './admin-path';
+import { getAdminEpoch, registerAdminAccess } from './security-state';
 import { sendSecurityAlert } from './security-alert';
 
 // Who may call /api/admin/*:
@@ -14,7 +15,8 @@ const WINDOW_MS = 15 * 60 * 1000;
 const failures = new Map<string, { count: number; since: number }>();
 
 export type IdTokenVerifier = (token: string) => Promise<{ email?: string; email_verified?: boolean }>;
-const firebaseVerifier: IdTokenVerifier = (token) => getAuth(getAdminApp()).verifyIdToken(token);
+// checkRevoked = true: tokens of sessions that were signed out on purpose (link rotation) stop working at once.
+const firebaseVerifier: IdTokenVerifier = (token) => getAuth(getAdminApp()).verifyIdToken(token, true);
 let verifier: IdTokenVerifier = firebaseVerifier;
 
 const digest = (s: string) => createHash('sha256').update(s).digest();
@@ -56,6 +58,12 @@ export async function requireAdmin(request: Request, now = Date.now()): Promise<
 
   const given = request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1] ?? '';
   const verdict = await judge(given, staticToken, emails);
+  if (verdict.kind === 'admin' && rotates()) {
+    // A session belongs to the address it was opened on (the page sends it in X-Admin-Link). After a rotation every older
+    // address is dead, so sessions opened on one lose access immediately, even though their login is still valid.
+    const link = request.headers.get('x-admin-link') ?? '';
+    if (!validAdminSegments(process.env, new Date(now), await getAdminEpoch(now, true)).includes(link)) return deny(401, 'link_expired');
+  }
   if (verdict.kind === 'static' || verdict.kind === 'admin') {
     failures.delete(ip);
     if (verdict.kind === 'admin') {
