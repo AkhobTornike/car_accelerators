@@ -246,8 +246,21 @@ export async function sendWeeklySummaryNow(getToken?: TokenGetter): Promise<{ se
   return (await res.json()) as { sent: true; to: string[] };
 }
 
-export async function pingAdmin(getToken?: TokenGetter): Promise<void> {
-  await adminFetch('/api/admin/ping', undefined, getToken);
+export interface PendingDeviceInfo { ip: string; email: string | null; at: string }
+export interface SecurityStatus { device: 'trusted' | 'pending'; pending: PendingDeviceInfo[] }
+
+/** Polled by the admin page: 401 = this session is over (link rotated / login revoked), `pending` = device not approved yet. */
+export async function getSecurityStatus(getToken?: TokenGetter): Promise<SecurityStatus> {
+  return (await (await adminFetch('/api/admin/security', undefined, getToken)).json()) as SecurityStatus;
+}
+
+export async function decideDevice(ip: string, approve: boolean, getToken?: TokenGetter): Promise<{ ok: boolean; rotated: boolean }> {
+  const res = await adminFetch(
+    '/api/admin/security/decide',
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip, approve }) },
+    getToken,
+  );
+  return (await res.json()) as { ok: boolean; rotated: boolean };
 }
 
 export function parseDisposition(header: string | null): string | null {
