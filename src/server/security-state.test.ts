@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { COOLDOWN_MS, decide, getAdminEpoch, registerAdminAccess, resetSecurityStateForTests, type SecurityState } from './security-state';
 
-const fresh = (over: Partial<SecurityState> = {}): SecurityState => ({ epoch: 0, knownIps: [], lastRotationAt: 0, ...over });
+const fresh = (over: Partial<SecurityState> = {}): SecurityState => ({ epoch: 0, knownIps: [], lastRotationAt: 0, events: [], ...over });
 const T = 1_000_000_000_000;
 
 describe('decide', () => {
@@ -10,6 +10,13 @@ describe('decide', () => {
     expect(d.rotation).toBeNull();
     expect(d.state.knownIps).toEqual(['1.1.1.1']);
     expect(d.state.epoch).toBe(0);
+  });
+  it('keeps the last rotations (who, from where) so an address can be looked up and trusted', () => {
+    const d = decide(fresh({ knownIps: ['1.1.1.1'] }), { ip: '6.6.6.6', email: 'e@x.com', allowed: false }, T);
+    expect(d.state.events).toEqual([{ at: new Date(T).toISOString(), reason: 'wrong-email', ip: '6.6.6.6', email: 'e@x.com' }]);
+    let state = d.state;
+    for (let i = 0; i < 30; i++) state = decide({ ...state, lastRotationAt: 0 }, { ip: `9.9.9.${i}`, email: null, allowed: false }, T + i).state;
+    expect(state.events).toHaveLength(20);
   });
   it('does nothing for a known address', () => {
     const s = fresh({ knownIps: ['1.1.1.1'] });
