@@ -2,6 +2,7 @@ import type { Battery, Sale, SaleVoid } from '@core/types';
 import { getSiteUrl } from '@/lib/site/site-url';
 import { currentAdminSegment, rotates } from './admin-path';
 import { sendMail } from './email';
+import { getAdminEpoch } from './security-state';
 import { getInventory, getRepository } from './repository';
 
 // The weekly email for the owner: last 7 days of sales, what is running out, shelf value and the (weekly) admin link.
@@ -115,7 +116,7 @@ export async function sendWeeklySummary(now: Date = new Date()): Promise<{ to: s
     inventory.listSales({ from: new Date(now.getTime() - 14 * DAY).toISOString(), to: new Date(now.getTime() - 7 * DAY).toISOString() }),
     getRepository().listBatteries(),
   ]);
-  const segment = currentAdminSegment(process.env, now);
+  const segment = currentAdminSegment(process.env, now, await getAdminEpoch());
   const adminUrl = segment ? `${getSiteUrl()}/m/${segment}/` : null;
   const mail = buildWeeklySummary({ now, sales, voids, previousSales: previous.sales, batteries, adminUrl, rotating: rotates() });
   const to = summaryRecipients();

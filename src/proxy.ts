@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { validAdminSegments } from '@/server/admin-path';
+import { getAdminEpoch } from '@/server/security-state';
 
 // The admin screens live at /m/<secret segment>/ (fixed ADMIN_PATH, or a weekly one with ADMIN_PATH_ROTATE=weekly — see admin-path.ts). For any other segment (or when ADMIN_PATH is not set at all) the request is
 // rewritten to a URL that matches nothing, so the visitor gets exactly the same 404 as for any unknown address —
@@ -7,11 +8,11 @@ import { validAdminSegments } from '@/server/admin-path';
 //
 // Language handling: Georgian is served at `/` (rewritten to `/ka`, URL unchanged); `/ka` redirects permanently
 // to `/`; `/en` is served as is. Nothing else is touched — in particular no locale logic runs for /m/* or /api/*.
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (pathname === '/m' || pathname.startsWith('/m/')) {
     const segment = pathname.split('/')[2] ?? '';
-    if (!segment || !validAdminSegments().includes(segment)) {
+    if (!segment || !validAdminSegments(process.env, new Date(), await getAdminEpoch()).includes(segment)) {
       return NextResponse.rewrite(new URL('/__no_such_page__', request.url));
     }
     return NextResponse.next();

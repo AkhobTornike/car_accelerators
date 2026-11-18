@@ -45,3 +45,16 @@ describe('validAdminSegments', () => {
     expect(a).not.toBe(b);
   });
 });
+
+describe('epoch (security rotation)', () => {
+  const env = { ADMIN_PATH: 'abc' };
+  const now = new Date('2026-11-18T10:00:00Z');
+  it('epoch 0 is the plain weekly address, a higher epoch replaces every segment including last week\'s', () => {
+    const before = validAdminSegments(env, now, 0);
+    const after = validAdminSegments(env, now, 1);
+    expect(after.some((s) => before.includes(s))).toBe(false);
+    expect(validAdminSegments(env, now)).toEqual(before);
+    expect(currentAdminSegment(env, now, 1)).toBe(after[0]);
+    expect(validAdminSegments(env, now, 2).some((s) => after.includes(s))).toBe(false);
+  });
+});
