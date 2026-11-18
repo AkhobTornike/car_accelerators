@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track } from '@/lib/analytics';
 import { contact, telLink, waLink } from '@/lib/site/contact';
 import { fill } from '@/lib/i18n/i18n';
 import type { SiteContent } from './content';
@@ -61,6 +62,7 @@ function QuoteForm({ t: c }: { t: SiteContent['contact'] }) {
       fill(c.quoteChannel, { v: channel }),
       note.trim() ? fill(c.quoteNote, { v: note.trim() }) : null,
     ].filter((l): l is string => l !== null);
+    track('generate_lead', { method: 'whatsapp_form', channel });
     window.open(waLink(lines.join('\n')), '_blank', 'noopener');
   }
 

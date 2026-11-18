@@ -206,6 +206,7 @@ export interface SiteContent {
   };
   footer: { navLabel: string; nav: { label: string; href: string }[] };
   mbar: { navLabel: string; whatsapp: string; call: string };
+  consent: { text: string; accept: string; decline: string };
   demoNotice: string;
 }
 
@@ -500,7 +501,8 @@ export const en: SiteContent = {
     ],
   },
   mbar: { navLabel: 'Quick contact', whatsapp: 'WhatsApp', call: 'Call' },
-  demoNotice: 'demo_v1 · fictional brand, sample stock and prices. Fitment is always confirmed by our team before installation.',
+  consent: { text: 'We use cookies for anonymous visit statistics (Google Analytics) to improve the site. You can decline.', accept: 'Accept', decline: 'Decline' },
+  demoNotice: '© AMPER.GE · Fitment is always confirmed by our team before installation.',
 };
 
 export const ka: SiteContent = {
@@ -913,7 +915,12 @@ export const ka: SiteContent = {
     "whatsapp": "WhatsApp",
     "call": "დარეკვა"
   },
-  "demoNotice": "demo_v1 · გამოგონილი ბრენდი, სანიმუშო მარაგი და ფასები. შესაბამისობას ყოველთვის ჩვენი გუნდი ადასტურებს მონტაჟამდე."
+  "consent": {
+    "text": "ვიყენებთ cookie-ებს ანონიმური სტატისტიკისთვის (Google Analytics), რომ საიტი გავაუმჯობესოთ. შეგიძლიათ უარი თქვათ.",
+    "accept": "თანხმობა",
+    "decline": "უარი"
+  },
+  "demoNotice": "© AMPER.GE · შესაბამისობას ყოველთვის ჩვენი გუნდი ადასტურებს მონტაჟამდე."
 };
 
 export const content = { en, ka };

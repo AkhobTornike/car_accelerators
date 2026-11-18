@@ -67,3 +67,22 @@ describe('JSON-LD language', () => {
     expect(business).toMatchObject({ inLanguage: 'ka', description: 'ქართული აღწერა' });
   });
 });
+
+describe('JSON-LD FAQ and image', () => {
+  it('adds a FAQPage with every question, and an image on the business', () => {
+    const faq = [
+      { q: 'Q1?', a: 'A1' },
+      { q: 'Q2?', a: 'A2' },
+    ];
+    const doc = buildJsonLd('https://ampera.ge', { phoneDisplay: 'p', address: 'a', hours: 'h', email: 'e' }, [], { faq });
+    const graph = doc['@graph'] as Record<string, unknown>[];
+    expect(graph[0]).toMatchObject({ '@type': 'LocalBusiness', image: 'https://ampera.ge/og.png' });
+    const page = graph.find((n) => n['@type'] === 'FAQPage') as { mainEntity: { name: string; acceptedAnswer: { text: string } }[] };
+    expect(page.mainEntity.map((q) => q.name)).toEqual(['Q1?', 'Q2?']);
+    expect(page.mainEntity[1].acceptedAnswer.text).toBe('A2');
+  });
+  it('omits FAQPage when there are no questions', () => {
+    const doc = buildJsonLd('https://ampera.ge', { phoneDisplay: 'p', address: 'a', hours: 'h', email: 'e' }, []);
+    expect((doc['@graph'] as Record<string, unknown>[]).some((n) => n['@type'] === 'FAQPage')).toBe(false);
+  });
+});
