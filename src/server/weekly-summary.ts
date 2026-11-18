@@ -10,7 +10,7 @@ import { getInventory, getRepository } from './repository';
 // Sent every Monday by the Vercel cron (/api/cron/weekly-summary) and on demand from the admin panel
 // (at most MANUAL_SENDS_PER_DAY times a day, see send-limit.ts).
 
-export const DEFAULT_SUMMARY_TO = ['Bezhitashvili15@gmail.com', 'amperagebattery@gmail.com'];
+export const DEFAULT_SUMMARY_TO = ['Bezhitashvili15@gmail.com', 'liziisraeli16@gmail.com'];
 export const LOW_STOCK_AT = 3; // same threshold the admin stock table highlights
 const DAY = 86_400_000;
 const ROTATED_NOW_NOTE = 'ეს წერილი გაიგზავნა ღილაკით: ძველი ლინკები უკვე გაუქმებულია და ყველა გახსნილი სესია გამოვიდა სისტემიდან. გამოიყენეთ ეს ახალი ლინკი.';

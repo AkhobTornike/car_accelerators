@@ -13,18 +13,22 @@ export const COOLDOWN_MS = 10 * 60_000;
 const MAX_IPS = 50;
 const EPOCH_CACHE_MS = 15_000;
 
-export interface SecurityState { epoch: number; knownIps: string[]; lastRotationAt: number }
+export interface SecurityEvent { at: string; reason: RotationReason; ip: string; email: string | null }
+export interface SecurityState { epoch: number; knownIps: string[]; lastRotationAt: number; events: SecurityEvent[] }
 export type RotationReason = 'wrong-email' | 'new-ip';
 export interface AccessEvent { ip: string; email: string | null; allowed: boolean }
 export interface Rotation { reason: RotationReason; ip: string; email: string | null; epoch: number }
 
-const empty = (): SecurityState => ({ epoch: 0, knownIps: [], lastRotationAt: 0 });
+const MAX_EVENTS = 20;
+const empty = (): SecurityState => ({ epoch: 0, knownIps: [], lastRotationAt: 0, events: [] });
 
 /** Pure decision: the next state and whether this event rotates the link. */
 export function decide(state: SecurityState, ev: AccessEvent, now: number): { state: SecurityState; rotation: Rotation | null } {
   const coolingDown = now - state.lastRotationAt < COOLDOWN_MS;
   const rotate = (reason: RotationReason, knownIps = state.knownIps) => {
-    const next = { epoch: state.epoch + 1, knownIps, lastRotationAt: now };
+    // The last rotations are kept (who, from where) so the owners can look up an address and trust it on purpose.
+    const events = [...state.events, { at: new Date(now).toISOString(), reason, ip: ev.ip, email: ev.email }].slice(-MAX_EVENTS);
+    const next = { epoch: state.epoch + 1, knownIps, lastRotationAt: now, events };
     return { state: next, rotation: { reason, ip: ev.ip, email: ev.email, epoch: next.epoch } };
   };
   if (!ev.allowed) return coolingDown ? { state, rotation: null } : rotate('wrong-email');
@@ -52,6 +56,7 @@ const firestoreStore = (): Store => {
     epoch: Number(d?.epoch ?? 0),
     knownIps: Array.isArray(d?.knownIps) ? d.knownIps.filter((x: unknown): x is string => typeof x === 'string') : [],
     lastRotationAt: Number(d?.lastRotationAt ?? 0),
+    events: Array.isArray(d?.events) ? (d.events as SecurityEvent[]) : [],
   });
   return {
     read: async () => parse((await ref().get()).data()),

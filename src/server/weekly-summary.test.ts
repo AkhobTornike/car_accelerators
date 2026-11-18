@@ -65,7 +65,7 @@ describe('rotated by the button', () => {
 
 describe('summaryRecipients', () => {
   it('uses the default address, or SUMMARY_EMAIL_TO when set', () => {
-    expect(summaryRecipients({})).toEqual(['Bezhitashvili15@gmail.com', 'amperagebattery@gmail.com']);
+    expect(summaryRecipients({})).toEqual(['Bezhitashvili15@gmail.com', 'liziisraeli16@gmail.com']);
     expect(DEFAULT_SUMMARY_TO).toHaveLength(2);
     expect(summaryRecipients({ SUMMARY_EMAIL_TO: 'a@x.ge, b@x.ge' })).toEqual(['a@x.ge', 'b@x.ge']);
   });
