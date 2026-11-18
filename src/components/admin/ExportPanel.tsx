@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AdminApiError, downloadExport, type ExportKind } from '@/lib/admin-api';
+import { AdminApiError, downloadExport, sendWeeklySummaryNow, type ExportKind } from '@/lib/admin-api';
 import RequestError from './RequestError';
 import { labels } from './labels';
 
@@ -12,6 +12,21 @@ export default function ExportPanel({ onSignOut }: { onSignOut: () => void }) {
   const [to, setTo] = useState('');
   const [busy, setBusy] = useState<ExportKind | null>(null);
   const [error, setError] = useState<AdminApiError | null>(null);
+  const [mail, setMail] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [mailError, setMailError] = useState<AdminApiError | null>(null);
+
+  async function sendSummary() {
+    if (mail === 'sending') return;
+    setMail('sending');
+    setMailError(null);
+    try {
+      await sendWeeklySummaryNow();
+      setMail('sent');
+    } catch (e) {
+      setMailError(e as AdminApiError);
+      setMail('idle');
+    }
+  }
 
   async function run(kind: ExportKind) {
     if (busy) return;
@@ -54,6 +69,26 @@ export default function ExportPanel({ onSignOut }: { onSignOut: () => void }) {
             {busy === k ? labels.loading : t[k]}
           </button>
         ))}
+      </div>
+      <h3 className="admin-sub">{t.mailTitle}</h3>
+      <p className="admin-hint">{t.mailHint}</p>
+      {mailError &&
+        (mailError.code === 'mail_not_configured' ? (
+          <div className="admin-error" role="alert">
+            <p>{t.mailNotConfigured.replace('{missing}', mailError.details.join(', '))}</p>
+          </div>
+        ) : (
+          <RequestError error={mailError} onSignOut={onSignOut} />
+        ))}
+      {mail === 'sent' && (
+        <p className="admin-success" role="status">
+          {t.mailSent}
+        </p>
+      )}
+      <div className="admin-row-actions">
+        <button className="btn btn-solid" type="button" disabled={mail === 'sending'} onClick={() => void sendSummary()}>
+          {mail === 'sending' ? t.mailSending : t.mailSend}
+        </button>
       </div>
     </div>
   );
