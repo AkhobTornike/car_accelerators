@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requireAdmin, resetAdminAuthForTests, setIdTokenVerifierForTests } from './admin-auth';
+import { resetSecurityStateForTests } from './security-state';
+
+const alert = vi.hoisted(() => vi.fn());
+vi.mock('./security-alert', () => ({ sendSecurityAlert: alert }));
 
 const bearer = (token: string, ip = '9.9.9.9') =>
   new Request('http://localhost/api/admin/sales', { headers: { Authorization: `Bearer ${token}`, 'x-forwarded-for': ip } });
@@ -9,6 +13,8 @@ const verify = vi.fn();
 beforeEach(() => {
   verify.mockReset();
   resetAdminAuthForTests();
+  resetSecurityStateForTests();
+  alert.mockReset();
   setIdTokenVerifierForTests(verify);
   vi.stubEnv('ADMIN_API_TOKEN', '');
   vi.stubEnv('ADMIN_EMAILS', 'amperagebattery@gmail.com');
@@ -86,5 +92,35 @@ describe('lockout', () => {
     verify.mockResolvedValue({ email: 'amperagebattery@gmail.com', email_verified: true });
     expect(await status('good', '4.4.4.4')).toBe(429);
     expect(await status('good', '5.5.5.5')).toBe(200);
+  });
+});
+
+describe('security alerts', () => {
+  it('a verified stranger rotates the link and triggers an alert; garbage tokens do not', async () => {
+    verify.mockResolvedValue({ email: 'stranger@gmail.com', email_verified: true });
+    expect(await status('good-token', '6.6.6.6')).toBe(401);
+    expect(alert).toHaveBeenCalledTimes(1);
+    expect(alert.mock.calls[0][0]).toMatchObject({ reason: 'wrong-email', ip: '6.6.6.6', email: 'stranger@gmail.com', epoch: 1 });
+
+    resetSecurityStateForTests();
+    alert.mockReset();
+    verify.mockRejectedValue(new Error('auth/argument-error'));
+    expect(await status('garbage', '6.6.6.6')).toBe(401);
+    expect(alert).not.toHaveBeenCalled();
+  });
+  it('learns the first admin address, then alerts on a new one', async () => {
+    verify.mockResolvedValue({ email: 'amperagebattery@gmail.com', email_verified: true });
+    expect(await status('t', '1.1.1.1')).toBe(200);
+    expect(alert).not.toHaveBeenCalled();
+    expect(await status('t', '1.1.1.1')).toBe(200);
+    expect(alert).not.toHaveBeenCalled();
+    expect(await status('t', '2.2.2.2')).toBe(200);
+    expect(alert).toHaveBeenCalledTimes(1);
+    expect(alert.mock.calls[0][0]).toMatchObject({ reason: 'new-ip', ip: '2.2.2.2' });
+  });
+  it('the static bearer token never triggers alerts', async () => {
+    vi.stubEnv('ADMIN_API_TOKEN', 'x'.repeat(30));
+    expect(await status('x'.repeat(30), '3.3.3.3')).toBe(200);
+    expect(alert).not.toHaveBeenCalled();
   });
 });

@@ -73,7 +73,11 @@ export default function ExportPanel({ onSignOut }: { onSignOut: () => void }) {
       <h3 className="admin-sub">{t.mailTitle}</h3>
       <p className="admin-hint">{t.mailHint}</p>
       {mailError &&
-        (mailError.code === 'mail_not_configured' ? (
+        (mailError.code === 'too_many_summaries' ? (
+          <div className="admin-error" role="alert">
+            <p>{t.mailLimit}</p>
+          </div>
+        ) : mailError.code === 'mail_not_configured' ? (
           <div className="admin-error" role="alert">
             <p>{t.mailNotConfigured.replace('{missing}', mailError.details.join(', '))}</p>
           </div>
