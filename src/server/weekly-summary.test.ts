@@ -54,6 +54,15 @@ describe('buildWeeklySummary', () => {
   });
 });
 
+describe('rotated by the button', () => {
+  it('says the old links are dead and everyone was signed out', () => {
+    const { text, html } = buildWeeklySummary({ ...base, rotatedNow: true });
+    expect(text).toContain('ძველი ლინკები უკვე გაუქმებულია');
+    expect(html).toContain('ძველი ლინკები უკვე გაუქმებულია');
+    expect(text).not.toContain('ყოველ კვირას იცვლება');
+  });
+});
+
 describe('summaryRecipients', () => {
   it('uses the default address, or SUMMARY_EMAIL_TO when set', () => {
     expect(summaryRecipients({})).toEqual(['Bezhitashvili15@gmail.com', 'amperagebattery@gmail.com']);

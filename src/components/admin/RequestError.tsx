@@ -7,7 +7,7 @@ export default function RequestError({ error, onRetry, onSignOut }: { error: Adm
   if (error.kind === 'forbidden') {
     return (
       <div className="admin-error" role="alert">
-        <p>{labels.forbidden}</p>
+        <p>{error.code === 'link_expired' ? labels.linkExpired : labels.forbidden}</p>
         {onSignOut && (
           <button className="btn btn-line btn-sm" type="button" onClick={onSignOut}>
             {labels.signOut}

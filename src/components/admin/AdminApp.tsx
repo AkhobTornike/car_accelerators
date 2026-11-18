@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth';
+import { pingAdmin } from '@/lib/admin-api';
 import { getFirebaseAuth } from '@/lib/firebase-client';
 import ExportPanel from './ExportPanel';
 import NewSale from './NewSale';
@@ -16,6 +17,20 @@ export default function AdminApp() {
   const [tab, setTab] = useState<Tab>('new');
 
   useEffect(() => onAuthStateChanged(getFirebaseAuth(), setUser), []);
+
+  // Every few seconds ask the server whether this session is still valid. When the link was rotated (or the login revoked)
+  // the answer is 401 and the page signs out and reloads: the old address then answers 404 like any unknown page.
+  useEffect(() => {
+    if (!user) return;
+    const timer = window.setInterval(() => {
+      pingAdmin().catch((e: { status?: number }) => {
+        if (e?.status === 401) {
+          void signOut(getFirebaseAuth()).finally(() => window.location.reload());
+        }
+      });
+    }, 15_000);
+    return () => window.clearInterval(timer);
+  }, [user]);
 
   async function signIn() {
     await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());

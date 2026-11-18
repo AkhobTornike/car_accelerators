@@ -69,9 +69,12 @@ const store = (env: Record<string, string | undefined> = process.env): Store => 
 
 let epochCache: { value: number; at: number } | null = null;
 
-/** The current epoch, cached for a few seconds (the proxy asks on every admin page request). Falls back to 0 on errors. */
-export async function getAdminEpoch(now = Date.now()): Promise<number> {
-  if (epochCache && now - epochCache.at < EPOCH_CACHE_MS) return epochCache.value;
+/**
+ * The current epoch, cached for a few seconds (the proxy asks on every admin page request). `fresh` skips the cache:
+ * used by the admin API, so a rotated link locks out open sessions at once. Falls back to 0 on errors.
+ */
+export async function getAdminEpoch(now = Date.now(), fresh = false): Promise<number> {
+  if (!fresh && epochCache && now - epochCache.at < EPOCH_CACHE_MS) return epochCache.value;
   try {
     const { epoch } = await store().read();
     epochCache = { value: epoch, at: now };
@@ -79,6 +82,16 @@ export async function getAdminEpoch(now = Date.now()): Promise<number> {
   } catch {
     return epochCache?.value ?? 0;
   }
+}
+
+/** Rotate the admin address on purpose (the admin's "send now" button): every earlier address dies, no cooldown. Returns the new epoch. */
+export async function rotateAdminLinkNow(now = Date.now()): Promise<number> {
+  const epoch = await store().update((s) => {
+    const next = { ...s, epoch: s.epoch + 1, lastRotationAt: now };
+    return { state: next, result: next.epoch };
+  });
+  epochCache = { value: epoch, at: now };
+  return epoch;
 }
 
 const knownCache = new Set<string>(); // IPs already known to be fine, so ordinary admin calls cost no database read

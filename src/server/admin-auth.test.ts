@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requireAdmin, resetAdminAuthForTests, setIdTokenVerifierForTests } from './admin-auth';
-import { resetSecurityStateForTests } from './security-state';
+import { validAdminSegments } from './admin-path';
+import { resetSecurityStateForTests, rotateAdminLinkNow } from './security-state';
 
 const alert = vi.hoisted(() => vi.fn());
 vi.mock('./security-alert', () => ({ sendSecurityAlert: alert }));
@@ -122,5 +123,39 @@ describe('security alerts', () => {
     vi.stubEnv('ADMIN_API_TOKEN', 'x'.repeat(30));
     expect(await status('x'.repeat(30), '3.3.3.3')).toBe(200);
     expect(alert).not.toHaveBeenCalled();
+  });
+});
+
+describe('sessions belong to the address they were opened on', () => {
+  const withLink = (link: string | null) =>
+    new Request('http://localhost/api/admin/sales', {
+      headers: { Authorization: 'Bearer t', 'x-forwarded-for': '1.1.1.1', ...(link === null ? {} : { 'x-admin-link': link }) },
+    });
+  beforeEach(() => {
+    vi.stubEnv('ADMIN_PATH', 'abc');
+    verify.mockResolvedValue({ email: 'amperagebattery@gmail.com', email_verified: true });
+  });
+  it('serves a session opened on a current address', async () => {
+    const [current] = validAdminSegments(process.env, new Date(), 0);
+    expect((await requireAdmin(withLink(current)))?.status ?? 200).toBe(200);
+  });
+  it('refuses a missing or unknown address with link_expired', async () => {
+    for (const link of [null, '', 'old-address']) {
+      const res = await requireAdmin(withLink(link));
+      expect(res?.status).toBe(401);
+      expect(await res?.text()).toBe('{"error":"link_expired"}');
+    }
+  });
+  it('after a rotation the old address loses access immediately', async () => {
+    const [before] = validAdminSegments(process.env, new Date(), 0);
+    expect((await requireAdmin(withLink(before)))?.status ?? 200).toBe(200);
+    await rotateAdminLinkNow();
+    expect((await requireAdmin(withLink(before)))?.status).toBe(401);
+    const [after] = validAdminSegments(process.env, new Date(), 1);
+    expect((await requireAdmin(withLink(after)))?.status ?? 200).toBe(200);
+  });
+  it('does not apply when rotation is switched off', async () => {
+    vi.stubEnv('ADMIN_PATH_ROTATE', 'off');
+    expect((await requireAdmin(withLink(null)))?.status ?? 200).toBe(200);
   });
 });

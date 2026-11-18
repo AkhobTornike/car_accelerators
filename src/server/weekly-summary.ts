@@ -2,7 +2,8 @@ import type { Battery, Sale, SaleVoid } from '@core/types';
 import { getSiteUrl } from '@/lib/site/site-url';
 import { currentAdminSegment, rotates } from './admin-path';
 import { sendMail } from './email';
-import { getAdminEpoch } from './security-state';
+import { revokeAdminSessions } from './revoke-sessions';
+import { getAdminEpoch, rotateAdminLinkNow } from './security-state';
 import { getInventory, getRepository } from './repository';
 
 // The weekly email for the owner: last 7 days of sales, what is running out, shelf value and the (weekly) admin link.
@@ -12,6 +13,7 @@ import { getInventory, getRepository } from './repository';
 export const DEFAULT_SUMMARY_TO = ['Bezhitashvili15@gmail.com', 'amperagebattery@gmail.com'];
 export const LOW_STOCK_AT = 3; // same threshold the admin stock table highlights
 const DAY = 86_400_000;
+const ROTATED_NOW_NOTE = 'ეს წერილი გაიგზავნა ღილაკით: ძველი ლინკები უკვე გაუქმებულია და ყველა გახსნილი სესია გამოვიდა სისტემიდან. გამოიყენეთ ეს ახალი ლინკი.';
 
 export interface SummaryInput {
   now: Date;
@@ -21,6 +23,8 @@ export interface SummaryInput {
   batteries: Battery[];
   adminUrl: string | null;
   rotating: boolean;
+  /** This very email rotates the link: every older address is dead and everyone has been signed out. */
+  rotatedNow?: boolean;
 }
 
 const gel = (n: number) => `${(Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₾`;
@@ -83,7 +87,8 @@ export function buildWeeklySummary(i: SummaryInput): { subject: string; text: st
   if (cost > 0) lines.push(`  თვითღირებულება: ${gel(cost)}`);
   if (noPrice) lines.push(`  ფასი არ არის მითითებული: ${noPrice} პროდუქტზე`);
   lines.push('', i.adminUrl ? `ადმინ პანელი${i.rotating ? ' (ეს კვირის ლინკი)' : ''}: ${i.adminUrl}` : 'ადმინ პანელის მისამართი არ არის დაყენებული.');
-  if (i.rotating) lines.push('ლინკი ყოველ კვირას იცვლება; წინა კვირის ლინკი კიდევ ერთი კვირა მუშაობს.');
+  if (i.rotatedNow) lines.push(ROTATED_NOW_NOTE);
+  else if (i.rotating) lines.push('ლინკი ყოველ კვირას იცვლება; წინა კვირის ლინკი კიდევ ერთი კვირა მუშაობს.');
   const text = lines.join('\n');
 
   const li = (s: string) => `<li>${esc(s)}</li>`;
@@ -98,7 +103,7 @@ ${cur.top.length ? `<h3>ყველაზე ხშირად გაყიდ
 <p>მარაგში არ არის: <b>${out.length}</b> პროდუქტი${out.length ? ` (მაგ. ${esc(out.slice(0, 6).map((b) => b.name).join(', '))})` : ''}</p>
 <h3>მარაგის მდგომარეობა</h3>
 <ul>${li(`აქტიური პროდუქტი: ${active.length}`)}${li(`ცალი თაროზე: ${units}`)}${li(`ღირებულება გასაყიდი ფასით: ${gel(retail)}`)}${cost > 0 ? li(`თვითღირებულება: ${gel(cost)}`) : ''}${noPrice ? li(`ფასი არ არის მითითებული: ${noPrice} პროდუქტზე`) : ''}</ul>
-${i.adminUrl ? `<p style="margin-top:20px"><a href="${esc(i.adminUrl)}" style="background:#A3E51F;color:#000;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">ადმინ პანელის გახსნა</a></p>${i.rotating ? '<p style="color:#555;font-size:13px">ლინკი ყოველ კვირას იცვლება; წინა კვირის ლინკი კიდევ ერთი კვირა მუშაობს.</p>' : ''}` : '<p>ადმინ პანელის მისამართი არ არის დაყენებული.</p>'}
+${i.adminUrl ? `<p style="margin-top:20px"><a href="${esc(i.adminUrl)}" style="background:#A3E51F;color:#000;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">ადმინ პანელის გახსნა</a></p>${i.rotatedNow ? `<p style="color:#555;font-size:13px">${esc(ROTATED_NOW_NOTE)}</p>` : i.rotating ? '<p style="color:#555;font-size:13px">ლინკი ყოველ კვირას იცვლება; წინა კვირის ლინკი კიდევ ერთი კვირა მუშაობს.</p>' : ''}` : '<p>ადმინ პანელის მისამართი არ არის დაყენებული.</p>'}
 </div>`;
 
   return { subject: `AMPER.GE — კვირის შეჯამება: ${cur.count} გაყიდვა, ${gel(cur.revenue)}`, text, html };
@@ -109,17 +114,28 @@ export function summaryRecipients(env: Record<string, string | undefined> = proc
   return list.length ? list : [...DEFAULT_SUMMARY_TO];
 }
 
-export async function sendWeeklySummary(now: Date = new Date()): Promise<{ to: string[] }> {
+/**
+ * Builds and sends the summary. With `rotate` (the admin's button) the link is replaced too, in this order: the new link
+ * is computed first and the email goes out; only when it was accepted are the old links killed and everyone signed out.
+ * A failing email therefore never leaves the owners without a working link.
+ */
+export async function sendWeeklySummary(now: Date = new Date(), opts: { rotate?: boolean } = {}): Promise<{ to: string[] }> {
   const inventory = getInventory();
   const [{ sales, voids }, previous, batteries] = await Promise.all([
     inventory.listSales({ from: new Date(now.getTime() - 7 * DAY).toISOString(), to: now.toISOString() }),
     inventory.listSales({ from: new Date(now.getTime() - 14 * DAY).toISOString(), to: new Date(now.getTime() - 7 * DAY).toISOString() }),
     getRepository().listBatteries(),
   ]);
-  const segment = currentAdminSegment(process.env, now, await getAdminEpoch());
+  const rotate = Boolean(opts.rotate) && rotates();
+  const epoch = (await getAdminEpoch(now.getTime(), true)) + (rotate ? 1 : 0);
+  const segment = currentAdminSegment(process.env, now, epoch);
   const adminUrl = segment ? `${getSiteUrl()}/m/${segment}/` : null;
-  const mail = buildWeeklySummary({ now, sales, voids, previousSales: previous.sales, batteries, adminUrl, rotating: rotates() });
+  const mail = buildWeeklySummary({ now, sales, voids, previousSales: previous.sales, batteries, adminUrl, rotating: rotates(), rotatedNow: rotate });
   const to = summaryRecipients();
   await sendMail({ to, ...mail });
+  if (rotate) {
+    await rotateAdminLinkNow(now.getTime());
+    await revokeAdminSessions();
+  }
   return { to };
 }
