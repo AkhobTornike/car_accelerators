@@ -17,6 +17,7 @@ import { getContent, parseLocale } from '@/lib/i18n/i18n';
 import { locales } from '@/lib/i18n/types';
 import { contact } from '@/lib/site/contact';
 import { buildJsonLd, serializeJsonLd } from '@/lib/site/json-ld';
+import { getSiteUrl } from '@/lib/site/site-url';
 
 // The catalogue section reads live prices, stock and photos: rebuild the static page at most once a minute.
 export const revalidate = 60;
@@ -46,7 +47,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       siteName: 'AMPER.GE',
       type: 'website',
       locale: lang === 'ka' ? 'ka_GE' : 'en_US',
+      images: [{ url: '/og.png', width: 1200, height: 630, alt: 'AMPER.GE' }],
     },
+    twitter: { card: 'summary_large_image', title: meta.title, description: meta.ogDescription, images: ['/og.png'] },
     alternates: { canonical, languages: { ka: '/', en: '/en', 'x-default': '/' } },
   };
 }
@@ -55,13 +58,13 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const lang = await langOf(params);
   const t = getContent(lang);
   const catalog = await getPublicCatalog();
-  const siteUrl = process.env.SITE_URL ?? 'http://localhost:3000';
+  const siteUrl = getSiteUrl();
   const jsonLd = serializeJsonLd(
     buildJsonLd(
       siteUrl,
       { phoneDisplay: contact.phoneDisplay, address: contact.address, hours: contact.hours, email: contact.email },
       catalog.map((b) => ({ id: b.id, name: b.name, price: b.price, stock: b.stock })),
-      { inLanguage: lang, description: t.meta.description },
+      { inLanguage: lang, description: t.meta.description, faq: t.faq.items },
     ),
   );
   return (

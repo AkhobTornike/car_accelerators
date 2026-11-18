@@ -596,3 +596,17 @@ input[type=file]{ width:100%; min-height:44px; background:var(--bg-2); color:var
   .admin-line > .btn{ grid-column:1/-1; justify-self:stretch }
 }
 .doc-table td:nth-child(n+3), .doc-table th:nth-child(n+3){ white-space:nowrap }
+
+/* ---------- cookie / analytics consent ---------- */
+.consent{
+  position:fixed; left:12px; right:12px; bottom:12px; z-index:70; max-width:640px; margin-inline:auto;
+  display:flex; align-items:center; gap:14px 18px; flex-wrap:wrap; justify-content:space-between;
+  background:#000; color:#fff; border:1px solid rgba(255,255,255,.2); border-top:2px solid var(--amber); border-radius:6px;
+  padding:14px 16px; font-size:13.5px; line-height:1.5; box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.consent p{ flex:1 1 260px; margin:0 }
+.consent-btns{ display:flex; gap:8px }
+.consent .btn-line{ color:#fff; border-color:rgba(255,255,255,.35) }
+.consent .btn-line:hover{ background:rgba(255,255,255,.12) }
+/* keep the banner clear of the mobile contact bar */
+@media (max-width:760px){ .consent{ bottom:calc(76px + env(safe-area-inset-bottom,0px)) } }

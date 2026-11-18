@@ -29,9 +29,9 @@ export function buildJsonLd(
   siteUrl: string,
   contact: JsonLdContact,
   products: JsonLdCatalogBattery[],
-  opts: { inLanguage?: string; description?: string } = {},
+  opts: { inLanguage?: string; description?: string; faq?: { q: string; a: string }[] } = {},
 ): Record<string, unknown> {
-  const { inLanguage = 'en', description = DEFAULT_DESCRIPTION } = opts;
+  const { inLanguage = 'en', description = DEFAULT_DESCRIPTION, faq = [] } = opts;
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -39,6 +39,7 @@ export function buildJsonLd(
         '@type': 'LocalBusiness',
         name: 'AMPER.GE',
         url: siteUrl,
+        image: `${siteUrl}/og.png`,
         inLanguage,
         description,
         telephone: contact.phoneDisplay,
@@ -47,6 +48,15 @@ export function buildJsonLd(
         openingHours: contact.hours,
         priceRange: '₾₾',
       },
+      ...(faq.length
+        ? [
+            {
+              '@type': 'FAQPage',
+              inLanguage,
+              mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+            },
+          ]
+        : []),
       ...products.map((p) => ({
         '@type': 'Product',
         name: p.name,
