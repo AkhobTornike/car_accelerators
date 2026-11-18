@@ -1,22 +1,24 @@
-/* AMPER.GE finder — LIGHT theme only. Look copied from demo_v1. */
+/* AMPER.GE — LIGHT theme with the brand palette: green #A3E51F, black #000, white #FFF.
+   Green is a FILL colour (buttons, bars, marks) — on white it has only 1.5:1 contrast, so accent TEXT on light
+   uses the dark green --amber-ink (#3F6B00, 6.3:1). Header and footer are black, where the brand green is text-safe. */
 
 :root{
   color-scheme: light;
-  --bg:      #F2F3F0;
-  --bg-2:    #FDFDFC;
-  --bg-3:    #E9EAE5;
-  --bg-4:    #DBDCD6;
-  --line:    rgba(24,27,31,.10);
-  --line-2:  rgba(24,27,31,.22);
-  --ink:     #1A1D21;
-  --ink-2:   #414950;
-  --ink-3:   #5D656E;
-  --ink-4:   #8B929A;
-  --amber:   #E8940A;
-  --amber-2: #F2A418;
-  --amber-ink: #8F6400;
-  --amber-line: rgba(143,100,0,.38);
-  --amber-soft: rgba(232,148,10,.11);
+  --bg:      #FFFFFF;
+  --bg-2:    #F6F7F3;
+  --bg-3:    #ECEEE6;
+  --bg-4:    #DDE1D3;
+  --line:    rgba(0,0,0,.10);
+  --line-2:  rgba(0,0,0,.22);
+  --ink:     #000000;
+  --ink-2:   #2E3329;
+  --ink-3:   #555B4E;
+  --ink-4:   #80877A;
+  --amber:   #A3E51F;   /* brand green — fills only */
+  --amber-2: #B4F23C;   /* hover */
+  --amber-ink: #3F6B00; /* brand green, dark enough for text on white */
+  --amber-line: rgba(63,107,0,.40);
+  --amber-soft: rgba(163,229,31,.20);
   --ok:      #147A4C;
   --ok-line: rgba(20,122,76,.42);
   --ok-soft: rgba(20,122,76,.10);
@@ -36,7 +38,7 @@ body{
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
 }
 a{ color:inherit }
-::selection{ background:var(--amber); color:#1C1503 }
+::selection{ background:var(--amber); color:#000 }
 :focus-visible{ outline:2px solid var(--amber-ink); outline-offset:3px }
 h1,h2,h3{ margin:0; font-family:var(--disp); font-weight:600; line-height:1.04; text-wrap:balance }
 p{ margin:0 }
@@ -64,11 +66,11 @@ section:first-child{ border-top:0 }
   -webkit-tap-highlight-color:transparent; user-select:none;
 }
 .btn-solid{
-  background:var(--amber); color:#1C1503;
+  background:var(--amber); color:#000;
   clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);
 }
 .btn-solid:hover{ background:var(--amber-2) }
-.btn-solid:active{ background:#DC8C05 }
+.btn-solid:active{ background:#8DCB12 }
 .btn-line{ border-color:var(--line-2) }
 .btn-line:hover{ background:var(--bg-3); border-color:var(--ink-4) }
 .btn-wa{ border-color:var(--wa-line); color:var(--wa) }
@@ -187,9 +189,15 @@ textarea:focus{ outline:2px solid var(--amber-ink); outline-offset:1px }
 
 /* ---------- header ---------- */
 header{
+  /* black band: tokens re-declared so all descendants read correctly on black */
+  --bg:#000000; --bg-2:#111310; --bg-3:rgba(255,255,255,.10); --bg-4:rgba(255,255,255,.18);
+  --line:rgba(255,255,255,.14); --line-2:rgba(255,255,255,.28);
+  --ink:#FFFFFF; --ink-2:#E2E6DA; --ink-3:#B4BAA9; --ink-4:#80877A;
+  --amber-ink:#A3E51F; --amber-line:rgba(163,229,31,.45); --amber-soft:rgba(163,229,31,.16);
+  color:var(--ink);
   position:sticky; top:0; z-index:50;
-  background:rgba(242,243,240,.92); backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);
+  background:rgba(0,0,0,.94); backdrop-filter:blur(10px);
+  border-bottom:2px solid var(--amber);
   padding-top:env(safe-area-inset-top,0px);
 }
 .topbar{ display:flex; align-items:center; gap:22px; padding-block:13px }
@@ -211,7 +219,7 @@ nav.mainnav a:hover{ color:var(--ink); background:var(--bg-3) }
 .head-phone{
   display:inline-flex; align-items:center; gap:9px; text-decoration:none;
   font:500 13px/1 var(--mono); font-variant-numeric:tabular-nums; color:var(--ink);
-  border:1px solid var(--line-2); border-radius:4px; padding:11px 14px; min-height:44px;
+  border:1px solid var(--line-2); border-radius:4px; padding:11px 14px; min-height:44px; white-space:nowrap;
 }
 .head-phone:hover{ border-color:var(--ink-4); background:var(--bg-3) }
 .head-phone .ic{ width:15px; height:15px; color:var(--amber-ink) }
@@ -227,6 +235,10 @@ nav.mainnav a:hover{ color:var(--ink); background:var(--bg-3) }
 .mmenu-switch a{ padding:12px 14px; border:1px solid var(--line-2); border-radius:4px; font-size:12px }
 .mmenu-switch a[aria-current="page"]{ background:var(--amber-soft); border-color:var(--amber); color:var(--amber-ink) }
 @media (max-width:960px){ nav.mainnav{ display:none } .mmenu{ display:block } }
+@media (max-width:1100px){
+  .head-phone span{ display:none } .head-phone{ padding:11px 12px }
+  .topbar{ gap:12px } nav.mainnav a{ padding:10px 7px; letter-spacing:.08em } .topbar .lang-switch{ flex:none }
+}
 @media (max-width:640px){ .head-phone span{ display:none } .head-phone{ padding:11px 12px } }
 
 /* ---------- hero ---------- */
@@ -239,7 +251,8 @@ nav.mainnav a:hover{ color:var(--ink); background:var(--bg-3) }
   font-size:clamp(36px,8.4vw,88px); text-transform:uppercase; letter-spacing:.015em; overflow-wrap:anywhere;
   margin:10px 0 18px;
 }
-.hero h1 em{ font-style:normal; color:var(--amber-ink) }
+/* brand-green bar under the words, painted in the lower part of the line only so it never covers the line above */
+.hero h1 em{ font-style:normal; color:var(--ink); background:linear-gradient(to top,var(--amber) 0 36%,transparent 36%); -webkit-box-decoration-break:clone; box-decoration-break:clone }
 .hero .lede{ font-size:16.5px; margin-bottom:26px; color:var(--ink-2); max-width:56ch }
 .hero-cta{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:26px }
 .hero-facts{ display:flex; flex-wrap:wrap; gap:8px 22px; padding:0; margin:0; list-style:none }
@@ -415,7 +428,15 @@ nav.mainnav a:hover{ color:var(--ink); background:var(--bg-3) }
 .hours .mono{ color:var(--ink) }
 
 /* ---------- footer ---------- */
-footer{ border-top:1px solid var(--line); padding-block:34px 40px; background:var(--bg) }
+footer{
+  /* black band: tokens re-declared so all descendants read correctly on black */
+  --bg:#000000; --bg-2:#111310; --bg-3:rgba(255,255,255,.10); --bg-4:rgba(255,255,255,.18);
+  --line:rgba(255,255,255,.14); --line-2:rgba(255,255,255,.28);
+  --ink:#FFFFFF; --ink-2:#E2E6DA; --ink-3:#B4BAA9; --ink-4:#80877A;
+  --amber-ink:#A3E51F; --amber-line:rgba(163,229,31,.45); --amber-soft:rgba(163,229,31,.16);
+  color:var(--ink);
+  border-top:2px solid var(--amber); padding-block:34px 40px; background:var(--bg);
+}
 .foot{ display:flex; gap:20px; flex-wrap:wrap; align-items:center; justify-content:space-between }
 .foot .small{ max-width:60ch; font-size:13px; color:var(--ink-3) }
 .foot-nav{ display:flex; gap:16px; flex-wrap:wrap }
