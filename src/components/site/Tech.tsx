@@ -24,7 +24,7 @@ function AnatomyFigure({ f }: { f: SiteContent['tech']['figure'] }) {
         <text x="111" y="73" textAnchor="middle" fontFamily="var(--mono)" fontSize="17" fontWeight="600" fill="var(--amber-ink)">+</text>
         <rect x="306" y="54" width="30" height="26" rx="3" fill="var(--bg-4)" stroke="var(--line-2)" strokeWidth="1.5" />
         <text x="321" y="73" textAnchor="middle" fontFamily="var(--mono)" fontSize="17" fill="var(--ink-2)">−</text>
-        <text x="140" y="72" fontFamily="var(--mono)" fontSize="10" letterSpacing="1.5" fill="var(--ink-3)">{f.polarity}</text>
+        <text x="140" y="72" fontFamily="var(--sans)" fontSize="11" fill="var(--ink-3)">{f.polarity}</text>
         <rect x="60" y="80" width="312" height="228" rx="7" fill="var(--bg-3)" stroke="var(--line-2)" strokeWidth="1.5" />
         <rect x="60" y="80" width="312" height="38" rx="7" fill="var(--bg-2)" stroke="var(--line-2)" strokeWidth="1.5" />
         <rect x="188" y="92" width="56" height="11" rx="5" fill="none" stroke="var(--line-2)" strokeWidth="1.5" />
@@ -37,12 +37,12 @@ function AnatomyFigure({ f }: { f: SiteContent['tech']['figure'] }) {
           <circle cx="108" cy="264" r="3.4" /><circle cx="120" cy="264" r="3.4" /><circle cx="132" cy="264" r="3.4" />
           <circle cx="108" cy="276" r="3.4" fill="var(--amber)" /><circle cx="120" cy="276" r="3.4" /><circle cx="132" cy="276" r="3.4" />
         </g>
-        <text x="146" y="268" fontFamily="var(--mono)" fontSize="10" fill="var(--ink-3)">{f.dateCode}</text>
-        <circle cx="316" cy="270" r="6" fill="var(--ok)" opacity=".9" />
-        <text x="252" y="274" fontFamily="var(--mono)" fontSize="10" fill="var(--ink-3)">{f.stateEye}</text>
+        <text x="146" y="268" fontFamily="var(--sans)" fontSize="10" fill="var(--ink-3)">{f.dateCode}</text>
+        <circle cx="332" cy="262" r="6" fill="var(--ok)" opacity=".9" />
+        <text x="344" y="290" textAnchor="end" fontFamily="var(--sans)" fontSize="10" fill="var(--ink-3)">{f.stateEye}</text>
         <g fontFamily="var(--mono)" fontSize="12" fontWeight="600" textAnchor="middle">
-          <circle cx="212" cy="217" r="10" fill="var(--bg)" stroke="var(--amber)" strokeWidth="1.5" /><text x="212" y="221.5" fill="var(--amber)">1</text>
-          <circle cx="288" cy="217" r="10" fill="var(--bg)" stroke="var(--amber)" strokeWidth="1.5" /><text x="288" y="221.5" fill="var(--amber)">2</text>
+          <circle cx="358" cy="206" r="10" fill="var(--bg)" stroke="var(--amber)" strokeWidth="1.5" /><text x="358" y="210.5" fill="var(--amber)">1</text>
+          <circle cx="358" cy="230" r="10" fill="var(--bg)" stroke="var(--amber)" strokeWidth="1.5" /><text x="358" y="234.5" fill="var(--amber)">2</text>
           <circle cx="88" cy="270" r="10" fill="var(--bg)" stroke="var(--amber)" strokeWidth="1.5" /><text x="88" y="274.5" fill="var(--amber)">3</text>
           <circle cx="111" cy="40" r="10" fill="var(--bg)" stroke="var(--amber)" strokeWidth="1.5" /><text x="111" y="44.5" fill="var(--amber)">4</text>
         </g>

@@ -610,3 +610,211 @@ input[type=file]{ width:100%; min-height:44px; background:var(--bg-2); color:var
 .consent .btn-line:hover{ background:rgba(255,255,255,.12) }
 /* keep the banner clear of the mobile contact bar */
 @media (max-width:760px){ .consent{ bottom:calc(76px + env(safe-area-inset-bottom,0px)) } }
+
+/* =====================================================================================================
+   REDESIGN LAYER — AMPER.GE public site.
+   override: sandro/checklist.md §1 (pure #000 / #FFF surfaces, black+green) — client brand mandate:
+   green #A3E51F / black #000 / white #FFF. Green is a FILL on light surfaces, text only on black.
+   Georgian rules: no letter-spacing, no all-caps, no mono face for Georgian words; headlines never break
+   inside a word. Radius scale: 8 (controls) / 14 (cards) / 18 (panels, hero media).
+   ===================================================================================================== */
+:root{
+  --r-ctl:8px; --r-card:14px; --r-panel:18px;
+  --ka: var(--font-ge), var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  --card-line: rgba(0,0,0,.10);
+}
+body{ font-size:16px; line-height:1.65 }
+section{ padding-block:clamp(60px,9vw,108px); border-top:0 }
+.wrap{ max-width:1200px }
+
+/* ---------- Georgian typography: calm, readable, never spaced-out or capitalised ---------- */
+:lang(ka) :is(.eyebrow,.btn,.tab,.pill,.upgrade,.tech,.field label,.spec .k,.gauge .glabel,.verdict,.mchip,
+  .chan-pick label,.chan .ct b,.anat-list b,.foot-nav a,.hero-facts li,.photo-tag,.why-photo figcaption,.skip,
+  .segbtn,nav.mainnav a,.mmenu-nav a,.lang-switch a,.pprice small,.rcard-actions .price small,.tbig small,
+  .badge-hidden,.how-n,.chan .ct span:not(.mono)){
+  font-family:var(--ka); letter-spacing:0; text-transform:none;
+}
+:lang(ka) h1,:lang(ka) h2,:lang(ka) h3,:lang(ka) .h2{ font-weight:700; letter-spacing:-.005em; text-transform:none }
+:lang(ka) .brand-name,:lang(ka) .pname,:lang(ka) .tbig{ font-family:var(--disp) } /* Latin product/brand marks */
+:lang(ka) .btn{ font-weight:600 }
+h1,h2,h3{ overflow-wrap:normal; word-break:normal; hyphens:none }
+
+/* ---------- section heads ---------- */
+.eyebrow{
+  font:600 13.5px/1.4 var(--sans); letter-spacing:.02em; text-transform:none; color:var(--amber-ink);
+  display:inline-flex; align-items:center; gap:9px; margin:0 0 14px;
+}
+.eyebrow::before{ width:9px; height:9px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 3px var(--amber-soft) }
+.h2{ font-size:clamp(28px,3.3vw,42px); line-height:1.18; text-transform:none; letter-spacing:-.01em; max-width:34ch }
+:lang(en) .h2{ text-transform:uppercase; letter-spacing:.005em }
+.faq .h2,.faq .eyebrow{ max-width:none }
+.faq details:first-of-type{ margin-top:28px; border-top:1px solid var(--line) }
+
+/* ---------- buttons ---------- */
+.btn{ border-radius:var(--r-ctl); font:600 15px/1 var(--sans); letter-spacing:.005em; text-transform:none; min-height:50px; padding:0 22px }
+.btn-solid{ clip-path:none; background:var(--amber); color:#000; box-shadow:inset 0 -2px 0 rgba(0,0,0,.14) }
+.btn-solid:hover{ background:var(--amber-2) }
+.btn-line{ border-color:rgba(0,0,0,.28) }
+.btn-wa{ border-radius:var(--r-ctl) }
+.btn-sm{ min-height:44px; padding:0 16px }
+:lang(en) .btn{ text-transform:none }
+
+/* ---------- inputs ---------- */
+select,input[type=text],input[type=tel],input[type=email],input[type=date],input[type=number],textarea{
+  background:#fff; border:1px solid rgba(0,0,0,.28); border-radius:var(--r-ctl); min-height:50px; padding:12px 14px; font-size:15px;
+}
+textarea{ min-height:104px }
+select:hover,input:hover,textarea:hover{ border-color:#000 }
+select:focus,input:focus,textarea:focus{ outline:3px solid var(--amber); outline-offset:0; border-color:#000 }
+.field label{ font:600 13.5px/1.2 var(--sans); letter-spacing:.01em; text-transform:none; color:var(--ink-2) }
+:lang(en) .field label{ text-transform:none }
+
+/* ---------- header ---------- */
+header{ border-bottom:0; box-shadow:0 1px 0 rgba(255,255,255,.08), 0 2px 0 var(--amber) }
+.brand-glyph{ clip-path:none; border-radius:8px; border-width:2px; width:36px; height:36px }
+.brand-name{ font-size:26px }
+nav.mainnav{ gap:2px }
+nav.mainnav a{ font:500 14.5px/1 var(--sans); letter-spacing:0; text-transform:none; padding:11px 12px; border-radius:var(--r-ctl); white-space:nowrap }
+.lang-switch{ border-radius:var(--r-ctl) }
+.lang-switch a{ font-size:13px }
+.head-phone{ border-radius:var(--r-ctl) }
+
+/* ---------- hero: black, headline in white with the brand green as TEXT ---------- */
+.hero{
+  --bg:#000000; --bg-2:#111310; --bg-3:rgba(255,255,255,.10); --bg-4:rgba(255,255,255,.18);
+  --line:rgba(255,255,255,.14); --line-2:rgba(255,255,255,.28);
+  --ink:#FFFFFF; --ink-2:#E2E6DA; --ink-3:#B4BAA9; --ink-4:#80877A;
+  --amber-ink:#A3E51F; --amber-line:rgba(163,229,31,.45); --amber-soft:rgba(163,229,31,.16);
+  background:#000; color:#fff; padding-block:clamp(48px,8vw,104px) clamp(56px,9vw,112px);
+}
+.hero-grid{ grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr); gap:clamp(32px,5vw,72px); align-items:center }
+.hero h1{
+  font-size:clamp(32px,4.1vw,56px); line-height:1.14; letter-spacing:-.01em; text-transform:none;
+  overflow-wrap:normal; word-break:normal; hyphens:none; text-wrap:balance; margin:6px 0 22px; color:#fff;
+}
+:lang(en) .hero h1{ text-transform:uppercase; letter-spacing:.01em; font-size:clamp(40px,6vw,84px); line-height:1.02 }
+.hero h1 em{ display:block; background:none; color:var(--amber); font-style:normal }
+.hero .eyebrow{ color:var(--amber) }
+.hero .lede{ font-size:clamp(16px,1.35vw,18px); line-height:1.7; color:#D9DED0; max-width:54ch; margin-bottom:30px }
+.hero .btn-line{ color:#fff; border-color:rgba(255,255,255,.4) }
+.hero .btn-line:hover{ background:rgba(255,255,255,.12); border-color:#fff }
+.hero-facts{ gap:10px 26px }
+.hero-facts li{ font:500 14px/1.4 var(--sans); letter-spacing:0; text-transform:none; color:#D9DED0 }
+.hero-facts .ic{ width:16px; height:16px; color:var(--amber) }
+.hero-photo .frame{ border:1px solid rgba(255,255,255,.18); border-radius:var(--r-panel); box-shadow:0 24px 60px rgba(0,0,0,.5); background:#111310 }
+.hero-photo .frame::before,.hero-photo .frame::after{ width:26px; height:26px; border-width:3px; border-color:var(--amber); z-index:2 }
+.hero-photo .frame::before{ top:14px; left:14px; border-top-left-radius:6px }
+.hero-photo .frame::after{ bottom:14px; right:14px; border-bottom-right-radius:6px }
+.photo-tag{ left:16px; bottom:16px; background:#000; color:#fff; border:1px solid rgba(255,255,255,.22); border-radius:var(--r-ctl); font:500 13px/1 var(--sans); padding:10px 12px }
+.photo-tag b{ color:var(--amber); font-family:var(--mono) }
+
+/* ---------- finder ---------- */
+#finder .finder-panel{ margin-top:32px }
+.finder-panel{ background:#fff; border:1px solid var(--card-line); border-radius:var(--r-panel); box-shadow:0 1px 2px rgba(0,0,0,.04),0 14px 36px rgba(0,0,0,.06); overflow:hidden }
+.tabs{ background:var(--bg-2); border-bottom:1px solid var(--card-line) }
+.tab{ font:600 15px/1.2 var(--sans); letter-spacing:0; text-transform:none; padding:18px 24px; border-right:0; color:var(--ink-3) }
+.tab[aria-selected="true"]{ background:#fff; color:#000 }
+.tab[aria-selected="true"]::after{ top:auto; bottom:0; height:3px }
+.subtabs{ border-radius:var(--r-ctl); background:var(--bg-2) }
+.find-hint,.find-note{ font-size:13.5px }
+.rcard{ background:#fff; border:1px solid var(--card-line); border-radius:var(--r-card); padding:20px 22px }
+.rname h3{ font-family:var(--disp); font-size:26px; text-transform:uppercase; letter-spacing:.02em }
+.pill{ font:600 13px/1 var(--sans); letter-spacing:0; text-transform:none; border-radius:999px; padding:7px 11px }
+
+/* ---------- catalogue (grey band, white cards) ---------- */
+#catalog{ background:var(--bg-2) }
+#catalog .pcard{ background:#fff; border:1px solid var(--card-line); border-radius:var(--r-card); box-shadow:0 1px 2px rgba(0,0,0,.04) }
+#catalog .pcard:hover{ border-color:rgba(0,0,0,.28); box-shadow:0 12px 28px rgba(0,0,0,.09) }
+.prender{ background:linear-gradient(180deg,var(--bg-2),#fff 95%); border-bottom:1px solid var(--card-line) }
+.pname{ font-size:26px; line-height:1.05 }
+.pspec{ font-size:13px; color:var(--ink-2) }
+.pprice{ font-size:22px }
+.mchip{ font:600 14px/1 var(--sans); letter-spacing:0; text-transform:none; border-radius:999px; background:#fff; border-color:rgba(0,0,0,.2); padding:10px 16px }
+.mchip[aria-pressed="true"]{ background:#000; border-color:#000; color:var(--amber) }
+.grid-products{ gap:18px; margin-top:28px }
+.cat-head{ margin-bottom:8px }
+
+/* ---------- technology ---------- */
+.tcol{ background:#fff; border:1px solid var(--card-line); border-radius:var(--r-card); padding:26px; gap:14px }
+.tcol.hot{ border-color:#000; box-shadow:inset 0 3px 0 var(--amber) }
+.tbig{ flex-direction:column; align-items:flex-start; gap:6px; font-size:44px; letter-spacing:.02em; color:#000 }
+.tbig small{ font:500 14px/1.4 var(--sans); color:var(--ink-3) }
+.tcol p{ font-size:15px; line-height:1.65; color:var(--ink-2) }
+.gauge .glabel{ font:600 13px/1 var(--sans); letter-spacing:0; text-transform:none }
+.gauge .cells i{ height:8px; border-radius:2px }
+.verdict{ font:500 14px/1.5 var(--sans); letter-spacing:0 }
+.ss-note{ background:#000; color:#fff; border:0; border-radius:var(--r-card); padding:22px 26px; font-size:15.5px; line-height:1.65; align-items:center }
+.ss-note b{ color:var(--amber) }
+.ss-note .ic{ color:var(--amber); width:24px; height:24px }
+.anat-fig{ background:var(--bg-2); border:1px solid var(--card-line); border-radius:var(--r-panel) }
+.anat-list li{ padding:16px 0 }
+.anat-list b{ font:600 16px/1.3 var(--sans); letter-spacing:0; text-transform:none; margin-bottom:4px }
+.anat-list p{ font-size:14.5px; color:var(--ink-2) }
+.anat-n{ font:600 13px/1.8 var(--mono); border-radius:999px; padding:0 9px; background:var(--amber); border-color:var(--amber); color:#000 }
+
+/* ---------- why ---------- */
+#why{ background:var(--bg-2) }
+.why-list li{ padding:20px 0; gap:18px }
+.why-ic{ width:46px; height:46px; border-radius:12px; background:#000; border:0; color:var(--amber) }
+.why-list b{ font-size:17px }
+.why-list p{ font-size:15px; color:var(--ink-2) }
+.why-photo{ border-radius:var(--r-panel); border:0; box-shadow:0 18px 44px rgba(0,0,0,.14) }
+.why-photo figcaption{ background:#000; color:#fff; border-color:rgba(255,255,255,.22); border-radius:var(--r-ctl); font:500 13px/1 var(--sans); padding:10px 12px; letter-spacing:0 }
+
+/* ---------- how: black band, three big numbered steps ---------- */
+#how{
+  --bg:#000000; --bg-2:#111310; --line:rgba(255,255,255,.16); --line-2:rgba(255,255,255,.3);
+  --ink:#FFFFFF; --ink-2:#E2E6DA; --ink-3:#B4BAA9; --amber-ink:#A3E51F;
+  background:#000; color:#fff;
+}
+#how .eyebrow{ color:var(--amber) }
+.how-grid{ border:0; gap:16px; overflow:visible; margin-top:36px }
+.how{ background:#111310; border:1px solid rgba(255,255,255,.14)!important; border-radius:var(--r-card); padding:30px 28px 32px }
+.how-n{ font:700 52px/1 var(--mono); letter-spacing:0; color:var(--amber) }
+.how h3{ font-size:24px; text-transform:none; letter-spacing:0; margin:18px 0 10px; color:#fff }
+.how p{ font-size:15.5px; line-height:1.65; color:#C9CFBE }
+
+/* ---------- faq ---------- */
+.faq summary{ font:600 17.5px/1.4 var(--sans); padding:22px 2px }
+:lang(ka) .faq summary{ font-family:var(--ka) }
+.faq summary .ic{ width:22px; height:22px }
+.faq .a{ font-size:16px; line-height:1.7; padding:0 44px 24px 2px }
+
+/* ---------- contact ---------- */
+#contact{ background:var(--bg-2) }
+.contact-grid{ margin-top:36px }
+.qform{ background:#fff; border:1px solid var(--card-line); border-radius:var(--r-panel); padding:clamp(20px,3vw,32px); gap:16px }
+.chan-pick label{ font:600 14px/1 var(--sans); letter-spacing:0; text-transform:none; border-radius:999px; padding:12px 18px; background:#fff }
+.chan-pick input:checked + label{ background:#000; border-color:#000; color:var(--amber) }
+.chan,.hours{ background:#fff; border:1px solid var(--card-line); border-radius:var(--r-card) }
+.chan .cic{ border-radius:12px; width:42px; height:42px; background:#000; border:0; color:var(--amber) }
+.chan.wa .cic{ background:#0E7A40; color:#fff }
+.chan:not(.wa) .cic{ color:var(--amber) }
+.chan .ct b{ font:600 13.5px/1.2 var(--sans); letter-spacing:0; text-transform:none; color:var(--ink-3) }
+.chan .ct span{ font-size:16px }
+.copy{ border-radius:var(--r-ctl) }
+.hours{ font-size:14.5px; line-height:1.65; padding:18px 20px }
+
+/* ---------- footer, mobile bar, consent ---------- */
+footer{ padding-block:40px 48px }
+.foot-nav a{ font:500 14px/1 var(--sans); letter-spacing:0; text-transform:none }
+.mbar{ background:#000; border-top:2px solid var(--amber); backdrop-filter:none }
+.mbar .btn-line{ color:#fff; border-color:rgba(255,255,255,.4) }
+.consent{ border-radius:var(--r-card) }
+
+/* ---------- small screens ---------- */
+@media (max-width:900px){
+  .hero-grid{ grid-template-columns:1fr }
+  .hero-photo{ order:2 }
+  .h2{ max-width:none }
+}
+@media (max-width:560px){
+  .hero h1{ font-size:clamp(32px,9.2vw,40px) }
+  .tab{ font-size:12.5px; padding:10px 6px }
+  .how-n{ font-size:44px }
+}
+
+.h3{ font-size:clamp(22px,2.3vw,28px); line-height:1.25; font-weight:700; margin-bottom:12px; text-transform:none; letter-spacing:-.005em }
+.why-photo figcaption,.photo-tag{ line-height:1.35 }
+.mbar .btn-wa{ color:#fff; border-color:rgba(255,255,255,.4) }
+.mbar .btn-wa:hover{ background:rgba(255,255,255,.12) }
