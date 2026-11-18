@@ -2,10 +2,11 @@ import { createHmac } from 'node:crypto';
 
 // The secret segment of the admin address (/m/<segment>/).
 //
-// Default: the fixed ADMIN_PATH. With ADMIN_PATH_ROTATE=weekly the segment changes every ISO week: it is
-// HMAC-SHA256(ADMIN_PATH, "<year>-W<week>") cut to 24 hex characters, and the previous week's segment is still accepted
-// so a link emailed on Monday keeps working until the next Monday has passed. The fixed ADMIN_PATH itself is then no
-// longer a valid address — it only acts as the key. The Google login stays the real protection; this only hides the door.
+// The segment changes by itself every ISO week (UTC, Monday start): it is HMAC-SHA256(ADMIN_PATH, "<year>-W<week>") cut to
+// 24 hex characters, and the previous week's segment is still accepted so a link emailed on Monday keeps working until
+// the next Monday has passed. The fixed ADMIN_PATH value is not an address any more — it only acts as the key.
+// ADMIN_PATH_ROTATE=off switches rotation off and uses ADMIN_PATH itself as the address.
+// The Google login stays the real protection; this only hides the door.
 
 export type Env = Record<string, string | undefined>;
 
@@ -19,7 +20,7 @@ export function isoWeekKey(date: Date): string {
   return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
-export const rotates = (env: Env = process.env) => env.ADMIN_PATH_ROTATE === 'weekly' && Boolean(env.ADMIN_PATH);
+export const rotates = (env: Env = process.env) => Boolean(env.ADMIN_PATH) && env.ADMIN_PATH_ROTATE !== 'off';
 
 function segmentFor(key: string, week: string): string {
   return createHmac('sha256', key).update(week).digest('hex').slice(0, 24);

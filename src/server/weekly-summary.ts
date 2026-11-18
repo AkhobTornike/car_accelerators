@@ -5,9 +5,10 @@ import { sendMail } from './email';
 import { getInventory, getRepository } from './repository';
 
 // The weekly email for the owner: last 7 days of sales, what is running out, shelf value and the (weekly) admin link.
-// Sent every Monday by the Vercel cron (/api/cron/weekly-summary) and on demand from the admin panel.
+// Sent every Monday by the Vercel cron (/api/cron/weekly-summary) and on demand from the admin panel
+// (at most MANUAL_SENDS_PER_DAY times a day, see send-limit.ts).
 
-export const DEFAULT_SUMMARY_TO = 'Bezhitashvili15@gmail.com';
+export const DEFAULT_SUMMARY_TO = ['Bezhitashvili15@gmail.com', 'amperagebattery@gmail.com'];
 export const LOW_STOCK_AT = 3; // same threshold the admin stock table highlights
 const DAY = 86_400_000;
 
@@ -104,7 +105,7 @@ ${i.adminUrl ? `<p style="margin-top:20px"><a href="${esc(i.adminUrl)}" style="b
 
 export function summaryRecipients(env: Record<string, string | undefined> = process.env): string[] {
   const list = (env.SUMMARY_EMAIL_TO ?? '').split(',').map((e) => e.trim()).filter(Boolean);
-  return list.length ? list : [DEFAULT_SUMMARY_TO];
+  return list.length ? list : [...DEFAULT_SUMMARY_TO];
 }
 
 export async function sendWeeklySummary(now: Date = new Date()): Promise<{ to: string[] }> {

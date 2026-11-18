@@ -13,9 +13,14 @@ describe('isoWeekKey', () => {
 
 describe('validAdminSegments', () => {
   const now = new Date('2026-11-18T10:00:00Z');
-  it('is the fixed ADMIN_PATH by default', () => {
-    expect(validAdminSegments({ ADMIN_PATH: 'abc' }, now)).toEqual(['abc']);
-    expect(rotates({ ADMIN_PATH: 'abc' })).toBe(false);
+  it('uses the fixed ADMIN_PATH when rotation is switched off', () => {
+    expect(validAdminSegments({ ADMIN_PATH: 'abc', ADMIN_PATH_ROTATE: 'off' }, now)).toEqual(['abc']);
+    expect(rotates({ ADMIN_PATH: 'abc', ADMIN_PATH_ROTATE: 'off' })).toBe(false);
+  });
+  it('rotates weekly by default', () => {
+    expect(rotates({ ADMIN_PATH: 'abc' })).toBe(true);
+    expect(validAdminSegments({ ADMIN_PATH: 'abc' }, now)).toHaveLength(2);
+    expect(validAdminSegments({ ADMIN_PATH: 'abc' }, now)).not.toContain('abc');
   });
   it('is off without ADMIN_PATH', () => {
     expect(validAdminSegments({}, now)).toEqual([]);
@@ -23,7 +28,7 @@ describe('validAdminSegments', () => {
     expect(rotates({ ADMIN_PATH_ROTATE: 'weekly' })).toBe(false);
   });
   it('rotates weekly: current + previous week, never the base value', () => {
-    const env = { ADMIN_PATH: 'abc', ADMIN_PATH_ROTATE: 'weekly' };
+    const env = { ADMIN_PATH: 'abc' };
     const [cur, prev] = validAdminSegments(env, now);
     expect(cur).toMatch(/^[0-9a-f]{24}$/);
     expect(prev).not.toBe(cur);
@@ -35,8 +40,8 @@ describe('validAdminSegments', () => {
     expect(next[0]).not.toBe(cur);
   });
   it('differs per secret', () => {
-    const a = validAdminSegments({ ADMIN_PATH: 'a', ADMIN_PATH_ROTATE: 'weekly' }, now)[0];
-    const b = validAdminSegments({ ADMIN_PATH: 'b', ADMIN_PATH_ROTATE: 'weekly' }, now)[0];
+    const a = validAdminSegments({ ADMIN_PATH: 'a' }, now)[0];
+    const b = validAdminSegments({ ADMIN_PATH: 'b' }, now)[0];
     expect(a).not.toBe(b);
   });
 });
