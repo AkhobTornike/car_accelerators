@@ -12,7 +12,8 @@
     "validate:data": "node --experimental-strip-types scripts/validate-data-cli.ts",
     "seed:firestore": "node --experimental-strip-types scripts/seed-firestore.ts",
     "test:emulators": "firebase emulators:exec --only firestore,auth --project demo-amper \"vitest run src/server/firestore src/server/admin-auth.emulator\"",
-    "import:excel": "node --experimental-strip-types scripts/import-excel.ts"
+    "import:excel": "node --experimental-strip-types scripts/import-excel.ts",
+    "admin:link": "node --experimental-strip-types scripts/admin-link.ts"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.1",

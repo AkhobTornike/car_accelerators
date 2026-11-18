@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requireAdmin, resetAdminAuthForTests, setIdTokenVerifierForTests } from './admin-auth';
+import { authorizeAdmin, requireAdmin, resetAdminAuthForTests, setIdTokenVerifierForTests } from './admin-auth';
 import { validAdminSegments } from './admin-path';
-import { resetSecurityStateForTests, rotateAdminLinkNow } from './security-state';
+import { approveDevice, resetSecurityStateForTests, rotateAdminLinkNow } from './security-state';
 
 const alert = vi.hoisted(() => vi.fn());
-vi.mock('./security-alert', () => ({ sendSecurityAlert: alert }));
+const deviceAlert = vi.hoisted(() => vi.fn());
+vi.mock('./security-alert', () => ({ sendSecurityAlert: alert, sendDeviceRequestAlert: deviceAlert }));
 
 const bearer = (token: string, ip = '9.9.9.9') =>
   new Request('http://localhost/api/admin/sales', { headers: { Authorization: `Bearer ${token}`, 'x-forwarded-for': ip } });
@@ -16,6 +17,7 @@ beforeEach(() => {
   resetAdminAuthForTests();
   resetSecurityStateForTests();
   alert.mockReset();
+  deviceAlert.mockReset();
   setIdTokenVerifierForTests(verify);
   vi.stubEnv('ADMIN_API_TOKEN', '');
   vi.stubEnv('ADMIN_EMAILS', 'amperagebattery@gmail.com');
@@ -96,7 +98,7 @@ describe('lockout', () => {
   });
 });
 
-describe('security alerts', () => {
+describe('security alerts and device approval', () => {
   it('a verified stranger rotates the link and triggers an alert; garbage tokens do not', async () => {
     verify.mockResolvedValue({ email: 'stranger@gmail.com', email_verified: true });
     expect(await status('good-token', '6.6.6.6')).toBe(401);
@@ -109,20 +111,32 @@ describe('security alerts', () => {
     expect(await status('garbage', '6.6.6.6')).toBe(401);
     expect(alert).not.toHaveBeenCalled();
   });
-  it('learns the first admin address, then alerts on a new one', async () => {
+  it('learns the first admin address; a new one is refused (403) and announced once, without rotating', async () => {
     verify.mockResolvedValue({ email: 'amperagebattery@gmail.com', email_verified: true });
     expect(await status('t', '1.1.1.1')).toBe(200);
-    expect(alert).not.toHaveBeenCalled();
     expect(await status('t', '1.1.1.1')).toBe(200);
     expect(alert).not.toHaveBeenCalled();
-    expect(await status('t', '2.2.2.2')).toBe(200);
-    expect(alert).toHaveBeenCalledTimes(1);
-    expect(alert.mock.calls[0][0]).toMatchObject({ reason: 'new-ip', ip: '2.2.2.2' });
+    expect(await status('t', '2.2.2.2')).toBe(403);
+    expect(await status('t', '2.2.2.2')).toBe(403);
+    expect(deviceAlert).toHaveBeenCalledTimes(1);
+    expect(deviceAlert.mock.calls[0][0]).toMatchObject({ ip: '2.2.2.2', email: 'amperagebattery@gmail.com' });
+    expect(alert).not.toHaveBeenCalled();
+    expect(await status('t', '1.1.1.1')).toBe(200); // the trusted laptop keeps working, the link did not change
   });
-  it('the static bearer token never triggers alerts', async () => {
+  it('a pending device may only ask for its status; once approved it works', async () => {
+    verify.mockResolvedValue({ email: 'amperagebattery@gmail.com', email_verified: true });
+    await status('t', '1.1.1.1');
+    const pending = await authorizeAdmin(bearer('t', '2.2.2.2'), Date.now(), { allowPending: true });
+    expect(pending).toMatchObject({ denied: null, device: 'pending' });
+    expect(await status('t', '2.2.2.2')).toBe(403);
+    await approveDevice('2.2.2.2');
+    expect(await status('t', '2.2.2.2')).toBe(200);
+  });
+  it('the static bearer token never triggers alerts or needs approval', async () => {
     vi.stubEnv('ADMIN_API_TOKEN', 'x'.repeat(30));
     expect(await status('x'.repeat(30), '3.3.3.3')).toBe(200);
     expect(alert).not.toHaveBeenCalled();
+    expect(deviceAlert).not.toHaveBeenCalled();
   });
 });
 
