@@ -12,11 +12,11 @@ describe('parseGaId', () => {
 describe('eventForHref', () => {
   it('maps the shop contact channels to events', () => {
     expect(eventForHref('tel:+995322550011')).toBe('click_phone');
-    expect(eventForHref('mailto:hello@amper.ge')).toBe('click_email');
+    expect(eventForHref('mailto:hello@ampera.ge')).toBe('click_email');
     expect(eventForHref('https://wa.me/995555123456?text=Hi')).toBe('click_whatsapp');
     expect(eventForHref('https://t.me/amperge')).toBe('click_telegram');
     expect(eventForHref('https://fb.com/amperge')).toBe('click_facebook');
-    expect(eventForHref('https://instagram.com/amper.ge')).toBe('click_instagram');
+    expect(eventForHref('https://instagram.com/ampera.ge')).toBe('click_instagram');
   });
   it('ignores every other link', () => {
     expect(eventForHref('#faq')).toBeNull();

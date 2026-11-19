@@ -211,11 +211,11 @@ export interface SiteContent {
 }
 
 export const en: SiteContent = {
-  brand: { name: 'AMPER', tld: '.GE' },
+  brand: { name: 'AMPERA', tld: '.GE' },
   skip: 'Skip to battery finder',
   menu: 'Menu',
   meta: {
-    title: 'AMPER.GE — Car batteries in Tbilisi',
+    title: 'AMPERA.GE — Car batteries in Tbilisi',
     description: 'Find the right car battery by vehicle or old-battery code. Fitment confirmed, same-day delivery and installation in Tbilisi.',
     ogDescription: 'Find the right car battery by vehicle or old-battery code. Same-day delivery and installation.',
   },
@@ -403,7 +403,7 @@ export const en: SiteContent = {
     },
   },
   why: {
-    eyebrow: 'Why AMPER',
+    eyebrow: 'Why AMPERA',
     heading: 'A counter you can actually reach',
     items: [
       { title: 'Real stock, real numbers', text: 'The catalog mirrors the shelf. If WhatsApp says 6 units, there are 6 units.' },
@@ -502,18 +502,18 @@ export const en: SiteContent = {
   },
   mbar: { navLabel: 'Quick contact', whatsapp: 'WhatsApp', call: 'Call' },
   consent: { text: 'We use cookies for anonymous visit statistics (Google Analytics) to improve the site. You can decline.', accept: 'Accept', decline: 'Decline' },
-  demoNotice: '© AMPER.GE · Fitment is always confirmed by our team before installation.',
+  demoNotice: '© AMPERA.GE · Fitment is always confirmed by our team before installation.',
 };
 
 export const ka: SiteContent = {
   "brand": {
-    "name": "AMPER",
+    "name": "AMPERA",
     "tld": ".GE"
   },
   "skip": "გადასვლა აკუმულატორის ძიებაზე",
   "menu": "მენიუ",
   "meta": {
-    "title": "AMPER.GE — ავტო აკუმულატორები თბილისში",
+    "title": "AMPERA.GE — ავტო აკუმულატორები თბილისში",
     "description": "შეარჩიეთ შესაფერისი ავტო აკუმულატორი ავტომობილის მოდელით ან ძველი აკუმულატორის კოდით. თავსებადობის გადამოწმება, მიტანა და მონტაჟი იმავე დღეს თბილისში.",
     "ogDescription": "შეარჩიეთ შესაფერისი ავტო აკუმულატორი ავტომობილის მოდელით ან ძველი აკუმულატორის კოდით. მიტანა და მონტაჟი იმავე დღეს."
   },
@@ -769,7 +769,7 @@ export const ka: SiteContent = {
     }
   },
   "why": {
-    "eyebrow": "რატომ AMPER",
+    "eyebrow": "რატომ AMPERA",
     "heading": "გუნდი, რომელსაც ნამდვილად დაუკავშირდებით",
     "items": [
       {
@@ -920,7 +920,7 @@ export const ka: SiteContent = {
     "accept": "თანხმობა",
     "decline": "უარი"
   },
-  "demoNotice": "© AMPER.GE · შესაბამისობას ყოველთვის ჩვენი გუნდი ადასტურებს მონტაჟამდე."
+  "demoNotice": "© AMPERA.GE · შესაბამისობას ყოველთვის ჩვენი გუნდი ადასტურებს მონტაჟამდე."
 };
 
 export const content = { en, ka };

@@ -1,4 +1,4 @@
-/* AMPER.GE — LIGHT theme with the brand palette: green #A3E51F, black #000, white #FFF.
+/* AMPERA.GE — LIGHT theme with the brand palette: green #A3E51F, black #000, white #FFF.
    Green is a FILL colour (buttons, bars, marks) — on white it has only 1.5:1 contrast, so accent TEXT on light
    uses the dark green --amber-ink (#3F6B00, 6.3:1). Header and footer are black, where the brand green is text-safe. */
 
@@ -612,7 +612,7 @@ input[type=file]{ width:100%; min-height:44px; background:var(--bg-2); color:var
 @media (max-width:760px){ .consent{ bottom:calc(76px + env(safe-area-inset-bottom,0px)) } }
 
 /* =====================================================================================================
-   REDESIGN LAYER — AMPER.GE public site.
+   REDESIGN LAYER — AMPERA.GE public site.
    override: sandro/checklist.md §1 (pure #000 / #FFF surfaces, black+green) — client brand mandate:
    green #A3E51F / black #000 / white #FFF. Green is a FILL on light surfaces, text only on black.
    Georgian rules: no letter-spacing, no all-caps, no mono face for Georgian words; headlines never break

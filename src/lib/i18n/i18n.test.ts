@@ -58,7 +58,7 @@ describe('sitemap alternates', () => {
 describe('JSON-LD language', () => {
   it('emits inLanguage and a localised description', () => {
     const doc = buildJsonLd(
-      'https://amper.ge',
+      'https://ampera.ge',
       { phoneDisplay: 'p', address: 'a', hours: 'h', email: 'e' },
       [],
       { inLanguage: 'ka', description: 'ქართული აღწერა' },

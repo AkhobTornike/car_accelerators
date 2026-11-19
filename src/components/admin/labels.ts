@@ -1,5 +1,5 @@
 export const labels = {
-  shopName: 'AMPER.GE',
+  shopName: 'AMPERA.GE',
   adminTitle: 'მაღაზიის მართვა',
   loginTitle: 'შესვლა',
   loginText: 'გაგრძელებისთვის შეხვიდეთ Google ანგარიშით.',

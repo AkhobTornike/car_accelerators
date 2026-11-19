@@ -37,7 +37,7 @@ export function buildJsonLd(
     '@graph': [
       {
         '@type': 'LocalBusiness',
-        name: 'AMPER.GE',
+        name: 'AMPERA.GE',
         url: siteUrl,
         image: `${siteUrl}/og.png`,
         inLanguage,

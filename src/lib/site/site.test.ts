@@ -19,7 +19,7 @@ describe('contact', () => {
     const m = await import('./contact');
     expect(m.contact.phone).toBe('+995322550011');
     expect(m.contact.whatsapp).toBe('995555123456');
-    expect(m.contact.email).toBe('hello@amper.ge');
+    expect(m.contact.email).toBe('hello@ampera.ge');
     expect(m.contact.address).toBe('12 Kakheti Highway, Tbilisi');
     expect(m.contact.hours).toBe('Mo-Sa 09:00-19:00');
   });
@@ -41,11 +41,11 @@ describe('contact', () => {
 });
 
 describe('json-ld', () => {
-  const contactInfo = { phoneDisplay: '+995 32 255 00 11', address: '12 Kakheti Highway, Tbilisi', hours: 'Mo-Sa 09:00-19:00', email: 'hello@amper.ge' };
+  const contactInfo = { phoneDisplay: '+995 32 255 00 11', address: '12 Kakheti Highway, Tbilisi', hours: 'Mo-Sa 09:00-19:00', email: 'hello@ampera.ge' };
   it('emits LocalBusiness plus one Product per battery', () => {
-    const doc = buildJsonLd('https://amper.ge', contactInfo, [{ id: 's60', name: 'AMPER S60', price: 215, stock: 'in' }]);
+    const doc = buildJsonLd('https://ampera.ge', contactInfo, [{ id: 's60', name: 'AMPER S60', price: 215, stock: 'in' }]);
     const graph = doc['@graph'] as Record<string, unknown>[];
-    expect(graph[0]).toMatchObject({ '@type': 'LocalBusiness', name: 'AMPER.GE' });
+    expect(graph[0]).toMatchObject({ '@type': 'LocalBusiness', name: 'AMPERA.GE' });
     expect(graph[1]).toMatchObject({
       '@type': 'Product',
       name: 'AMPER S60',
@@ -53,7 +53,7 @@ describe('json-ld', () => {
     });
   });
   it('omits offers when price is null', () => {
-    const doc = buildJsonLd('https://amper.ge', contactInfo, [{ id: 's60', name: 'AMPER S60', price: null, stock: 'in' }]);
+    const doc = buildJsonLd('https://ampera.ge', contactInfo, [{ id: 's60', name: 'AMPER S60', price: null, stock: 'in' }]);
     expect((doc['@graph'] as Record<string, unknown>[])[1]).not.toHaveProperty('offers');
   });
   it('maps availability from stock', () => {
