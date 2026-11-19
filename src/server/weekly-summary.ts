@@ -76,7 +76,7 @@ export function buildWeeklySummary(i: SummaryInput): { subject: string; text: st
   if (cur.profit != null) rows.push(['სავარაუდო მოგება', gel(cur.profit)]);
   if (voided.size) rows.push(['გაუქმებული გაყიდვა', `${voided.size}`]);
 
-  const lines: string[] = [`AMPER.GE — კვირის შეჯამება (${day(from)} – ${day(i.now)})`, ''];
+  const lines: string[] = [`AMPERA.GE — კვირის შეჯამება (${day(from)} – ${day(i.now)})`, ''];
   lines.push('გაყიდვები', ...rows.map(([k, v]) => `  ${k}: ${v}`), '');
   if (cur.top.length) lines.push('ყველაზე ხშირად გაყიდული', ...cur.top.map((p) => `  ${p.name} — ${p.qty} ცალი (${gel(p.revenue)})`), '');
   lines.push(`მარაგი ბოლოს (${LOW_STOCK_AT} ცალი ან ნაკლები)`);
@@ -93,7 +93,7 @@ export function buildWeeklySummary(i: SummaryInput): { subject: string; text: st
 
   const li = (s: string) => `<li>${esc(s)}</li>`;
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;color:#111;line-height:1.5">
-<h2 style="margin:0 0 4px">AMPER.GE — კვირის შეჯამება</h2>
+<h2 style="margin:0 0 4px">AMPERA.GE — კვირის შეჯამება</h2>
 <p style="margin:0 0 16px;color:#555">${day(from)} – ${day(i.now)}</p>
 <h3>გაყიდვები</h3>
 <table cellpadding="6" style="border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="color:#555">${esc(k)}</td><td><b>${esc(v)}</b></td></tr>`).join('')}</table>
@@ -106,7 +106,7 @@ ${cur.top.length ? `<h3>ყველაზე ხშირად გაყიდ
 ${i.adminUrl ? `<p style="margin-top:20px"><a href="${esc(i.adminUrl)}" style="background:#A3E51F;color:#000;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">ადმინ პანელის გახსნა</a></p>${i.rotatedNow ? `<p style="color:#555;font-size:13px">${esc(ROTATED_NOW_NOTE)}</p>` : i.rotating ? '<p style="color:#555;font-size:13px">ლინკი ყოველ კვირას იცვლება; წინა კვირის ლინკი კიდევ ერთი კვირა მუშაობს.</p>' : ''}` : '<p>ადმინ პანელის მისამართი არ არის დაყენებული.</p>'}
 </div>`;
 
-  return { subject: `AMPER.GE — კვირის შეჯამება: ${cur.count} გაყიდვა, ${gel(cur.revenue)}`, text, html };
+  return { subject: `AMPERA.GE — კვირის შეჯამება: ${cur.count} გაყიდვა, ${gel(cur.revenue)}`, text, html };
 }
 
 export function summaryRecipients(env: Record<string, string | undefined> = process.env): string[] {

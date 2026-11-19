@@ -18,14 +18,14 @@ export function buildSecurityAlert(r: Rotation, now: Date, adminUrl: string | nu
     ? 'ადმინ ლინკი ავტომატურად შეიცვალა, ძველი ლინკები აღარ მუშაობს.'
     : 'ლინკის როტაცია გამორთულია (ADMIN_PATH_ROTATE=off), ამიტომ ლინკი არ შეცვლილა.';
   const advice = r.reason === 'device-rejected' ? 'უარყოფილ მოწყობილობას წვდომა არ აქვს. გამოიყენეთ ახალი ლინკი.' : 'თუ ეს თქვენ არ იყავით, ახალი ლინკი უკვე დაცულია და ადმინის წვდომა მხოლოდ თქვენს ანგარიშებს აქვს.';
-  const text = ['AMPER.GE — უსაფრთხოების შეტყობინება', '', ...facts, '', linkNote, adminUrl ? `ახალი ლინკი: ${adminUrl}` : '', '', advice].join('\n');
+  const text = ['AMPERA.GE — უსაფრთხოების შეტყობინება', '', ...facts, '', linkNote, adminUrl ? `ახალი ლინკი: ${adminUrl}` : '', '', advice].join('\n');
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;color:#111;line-height:1.5">
-<h2 style="margin:0 0 12px">AMPER.GE — უსაფრთხოების შეტყობინება</h2>
+<h2 style="margin:0 0 12px">AMPERA.GE — უსაფრთხოების შეტყობინება</h2>
 <ul>${facts.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
 <p>${esc(linkNote)}</p>
 ${adminUrl ? `<p><a href="${esc(adminUrl)}" style="background:#A3E51F;color:#000;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">ახალი ადმინ ლინკი</a></p>` : ''}
 <p style="color:#555;font-size:13px">${esc(advice)}</p></div>`;
-  return { subject: 'AMPER.GE — უსაფრთხოება: ადმინ ლინკი შეიცვალა', text, html };
+  return { subject: 'AMPERA.GE — უსაფრთხოება: ადმინ ლინკი შეიცვალა', text, html };
 }
 
 /** Emails both owners after a rotation. Never throws (a mail outage must not break the admin API). */
@@ -46,12 +46,12 @@ export function buildDeviceRequestAlert(p: PendingDevice, adminUrl: string | nul
   const facts = [`ანგარიში: ${p.email ?? 'უცნობი'}`, `IP: ${p.ip}`, `დრო: ${fmtTime(p.at)}`];
   const what = 'ადმინ პანელში ახალი მოწყობილობიდან შევიდნენ. სანამ ადმინი არ დაადასტურებს, ამ მოწყობილობას არაფრის გაკეთება არ შეუძლია. ლინკი არ შეცვლილა.';
   const how = 'გახსენით ადმინ პანელი სანდო მოწყობილობიდან და ზედა ნაწილში დააჭირეთ „დაუშვი" (თუ ეს თქვენი ან თქვენი კოლეგაა) ან „უარყავი" (მაშინ ლინკი დაუყოვნებლივ შეიცვლება).';
-  const text = ['AMPER.GE — ახალი მოწყობილობა ითხოვს წვდომას', '', ...facts, '', what, how, adminUrl ? `ადმინ პანელი: ${adminUrl}` : ''].join('\n');
+  const text = ['AMPERA.GE — ახალი მოწყობილობა ითხოვს წვდომას', '', ...facts, '', what, how, adminUrl ? `ადმინ პანელი: ${adminUrl}` : ''].join('\n');
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;color:#111;line-height:1.5">
-<h2 style="margin:0 0 12px">AMPER.GE — ახალი მოწყობილობა ითხოვს წვდომას</h2>
+<h2 style="margin:0 0 12px">AMPERA.GE — ახალი მოწყობილობა ითხოვს წვდომას</h2>
 <ul>${facts.map((f) => `<li>${esc(f)}</li>`).join('')}</ul><p>${esc(what)}</p><p>${esc(how)}</p>
 ${adminUrl ? `<p><a href="${esc(adminUrl)}" style="background:#A3E51F;color:#000;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">ადმინ პანელის გახსნა</a></p>` : ''}</div>`;
-  return { subject: 'AMPER.GE — ახალი მოწყობილობა ითხოვს წვდომას', text, html };
+  return { subject: 'AMPERA.GE — ახალი მოწყობილობა ითხოვს წვდომას', text, html };
 }
 
 /** Tells the owners that a device waits for approval (the link is unchanged). Never throws. */
