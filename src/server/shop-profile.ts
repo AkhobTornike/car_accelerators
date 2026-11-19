@@ -25,7 +25,7 @@ export const shopProfileSchema = z.object({
 export type ShopProfile = z.infer<typeof shopProfileSchema>;
 
 export const DEMO_PROFILE: ShopProfile = {
-  brand: 'AMPER.GE',
+  brand: 'AMPERA.GE',
   legalName: 'DEMO — არ არის რეალური რეკვიზიტი',
   taxId: '000000000',
   address: 'თბილისი (დემო მისამართი)',

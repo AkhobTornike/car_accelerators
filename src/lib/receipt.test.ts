@@ -11,7 +11,7 @@ import type { Sale } from './admin-api';
 import type { ShopProfile } from '@/server/shop-profile';
 
 const profile = (o: Partial<ShopProfile> = {}): ShopProfile => ({
-  brand: 'AMPER.GE',
+  brand: 'AMPERA.GE',
   legalName: 'შპს ამპერი',
   taxId: '123456789',
   address: 'თბილისი',
